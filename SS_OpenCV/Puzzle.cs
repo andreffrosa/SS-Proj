@@ -8,7 +8,7 @@ namespace SS_OpenCV
 {
     internal class Puzzle
     {
-        public static int[,] getLabels(Image<Bgr, byte> img)
+        public static uint[,] getLabels(Image<Bgr, byte> img)
         {
 
             unsafe
@@ -23,141 +23,217 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                int[,] labels = new int[img.Width, img.Height];
+                uint[,] labels = new uint[img.Width, img.Height];
                 bool changed = true;
-                int curr_label = 1;
+                uint curr_label = 1;
 
                 int back_b = dataPtrOriginal[0], back_g = dataPtrOriginal[1], back_r = dataPtrOriginal[2];
 
-                changed = false;
+                changed = true;
                 for (int y = 0; y < height; y++)
                 {
                     for (int x = 0; x < width; x++)
                     {
                         if (back_b != dataPtrOriginal[0] || back_g != dataPtrOriginal[1] || back_r != dataPtrOriginal[2])
                         {
-                            //new piece
                             labels[x, y] = curr_label++;
-                            changed = true;
                         }
                         else
                         {
-                           /* dataPtrOriginal[0] = 0;
-                            dataPtrOriginal[1] = 0;
-                            dataPtrOriginal[2] = 0;
-                            */
-                            labels[x, y] = 0;
+                            labels[x, y] = UInt32.MaxValue;
+                        }
+                        dataPtrOriginal += nChan;
+                    }
+                    dataPtrOriginal += padding;
+                }
+
+                
+                while (changed)
+                {
+                    changed = false;
+                    dataPtrOriginal = originalPtr;
+                    dataPtrOriginal += nChan + step;
+                    for (int y = 1; y < height - 1; y++)
+                    {
+                        
+                        for (int x = 1; x < width - 1; x++)
+                        {
+                            uint tmp = labels[x, y];
+                            if (labels[x, y] != UInt32.MaxValue)
+                            {
+                                if (labels[x, y] > labels[x - 1, y - 1])
+                                {
+                                    labels[x, y] = labels[x - 1, y - 1];
+                                }
+                                if (labels[x, y] > labels[x, y - 1])
+                                {
+                                    labels[x, y] = labels[x, y - 1];
+                                }
+                                if (labels[x, y] > labels[x - 1, y])
+                                {
+                                    labels[x, y] = labels[x - 1, y];
+                                }
+                                if (labels[x, y] > labels[x + 1, y - 1])
+                                {
+                                    labels[x, y] = labels[x + 1, y - 1];
+                                }
+                                if (labels[x, y] > labels[x - 1, y + 1])
+                                {
+                                    labels[x, y] = labels[x - 1, y + 1];
+                                }
+                                if (labels[x, y] > labels[x + 1, y])
+                                {
+                                    labels[x, y] = labels[x + 1, y];
+                                }
+                                if (labels[x, y] > labels[x, y + 1])
+                                {
+                                    labels[x, y] = labels[x, y + 1];
+                                }
+                                if (labels[x, y] > labels[x + 1, y + 1])
+                                {
+                                    labels[x, y] = labels[x + 1, y + 1];
+                                }
+                                if (tmp != labels[x, y])
+                                    changed = true;
+                            }
+                            
+                            //labels[x, y] = (labels[x, y] < labels[x - 1, y - 1]) ? labels[x - 1, y - 1] : labels[x, y];
+
+                            dataPtrOriginal += nChan;
                         }
 
+                        //at the end of the line advance the pointer by the aligment bytes (padding)
+                        dataPtrOriginal += nChan * 2 + padding;
+                    }
+
+                    dataPtrOriginal = originalPtr + (nChan * width) + (step * height);
+                    dataPtrOriginal -= nChan + step;
+                    for (int y = height - 2; y > 0; y--)
+                    {
+                        for (int x = width - 2; x > 0; x--)
+                        {
+                           
+                            uint tmp = labels[x, y];
+                            if (labels[x, y] != UInt32.MaxValue)
+                            {
+                                if (labels[x, y] > labels[x - 1, y - 1])
+                                {
+                                    labels[x, y] = labels[x - 1, y - 1];
+                                }
+                                if (labels[x, y] > labels[x, y - 1])
+                                {
+                                    labels[x, y] = labels[x, y - 1];
+                                }
+                                if (labels[x, y] > labels[x - 1, y])
+                                {
+                                    labels[x, y] = labels[x - 1, y];
+                                }
+                                if (labels[x, y] > labels[x + 1, y - 1])
+                                {
+                                    labels[x, y] = labels[x + 1, y - 1];
+                                }
+                                if (labels[x, y] > labels[x - 1, y + 1])
+                                {
+                                    labels[x, y] = labels[x - 1, y + 1];
+                                }
+                                if (labels[x, y] > labels[x + 1, y])
+                                {
+                                    labels[x, y] = labels[x + 1, y];
+                                }
+                                if (labels[x, y] > labels[x, y + 1])
+                                {
+                                    labels[x, y] = labels[x, y + 1];
+                                }
+                                if (labels[x, y] > labels[x + 1, y + 1])
+                                {
+                                    labels[x, y] = labels[x + 1, y + 1];
+                                }
+                                if (tmp != labels[x, y])
+                                    changed = true;
+                              
+                            }
+                            dataPtrOriginal -= nChan;
+                        }
+                        //at the end of the line advance the pointer by the aligment bytes (padding)
+                        dataPtrOriginal -= nChan * 2 + padding;
+                    }
+                    
+                }
+
+                Console.WriteLine(numb_pieces);
+                
+                /*
+                dataPtrOriginal = originalPtr;
+                List<uint> pieces = new List<uint>();
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        if (labels[x, y] != UInt32.MaxValue)
+                        {
+                            dataPtrOriginal[0] = (byte) (labels[x, y]*10 % 256);
+                            dataPtrOriginal[1] = 0;
+                            dataPtrOriginal[2] = (byte)(labels[x, y] * 10 % 256);
+                            if (!pieces.Contains(labels[x, y]))
+                            {
+                                pieces.Add(labels[x, y]);
+                               // Console.WriteLine(labels[x, y]);
+ 
+                            }
+                        }
                         dataPtrOriginal += nChan;
                     }
                     //at the end of the line advance the pointer by the aligment bytes (padding)
                     dataPtrOriginal += padding;
                 }
-
-                dataPtrOriginal = originalPtr;
-                while (changed)
-                {
-                    changed = false;
-                    for (int y = 1; y < height - 1; y++)
-                    {
-                        for (int x = 1; x < width - 1; x++)
-                        {
-                            int tmp = labels[x, y];
-                            if (labels[x, y] < labels[x - 1, y - 1])
-                            {
-                                labels[x, y] = labels[x - 1, y - 1];
-                            }
-                            if (labels[x, y] < labels[x, y - 1])
-                            {
-                                labels[x, y] = labels[x, y - 1];
-                            }
-                            if (labels[x, y] < labels[x - 1, y])
-                            {
-                                labels[x, y] = labels[x - 1, y];
-                            }
-                            if (labels[x, y] < labels[x + 1, y - 1])
-                            {
-                                labels[x, y] = labels[x + 1, y - 1];
-                            }
-                            if (labels[x, y] < labels[x - 1, y + 1])
-                            {
-                                labels[x, y] = labels[x - 1, y + 1];
-                            }
-                            if (labels[x, y] < labels[x + 1, y])
-                            {
-                                labels[x, y] = labels[x + 1, y];
-                            }
-                            if (labels[x, y] < labels[x, y + 1])
-                            {
-                                labels[x, y] = labels[x, y + 1];
-                            }
-                            if (labels[x, y] < labels[x + 1, y + 1])
-                            {
-                                labels[x, y] = labels[x + 1, y + 1];
-                            }
-                            if (tmp != labels[x, y])
-                                changed = true;
-                            //labels[x, y] = (labels[x, y] < labels[x - 1, y - 1]) ? labels[x - 1, y - 1] : labels[x, y];
-
-                            dataPtrOriginal += nChan;
-                        }
-                        //at the end of the line advance the pointer by the aligment bytes (padding)
-                        dataPtrOriginal += padding;
-                    }
-
-                    for (int y = height - 2; y > 0; y--)
-                    {
-                        for (int x = width - 2; x > 0; x--)
-                        {
-                            int tmp = labels[x, y];
-                            if (labels[x, y] < labels[x - 1, y - 1])
-                            {
-                                labels[x, y] = labels[x - 1, y - 1];
-                            }
-                            if (labels[x, y] < labels[x, y - 1])
-                            {
-                                labels[x, y] = labels[x, y - 1];
-                            }
-                            if (labels[x, y] < labels[x - 1, y])
-                            {
-                                labels[x, y] = labels[x - 1, y];
-                            }
-                            if (labels[x, y] < labels[x + 1, y - 1])
-                            {
-                                labels[x, y] = labels[x + 1, y - 1];
-                            }
-                            if (labels[x, y] < labels[x - 1, y + 1])
-                            {
-                                labels[x, y] = labels[x - 1, y + 1];
-                            }
-                            if (labels[x, y] < labels[x + 1, y])
-                            {
-                                labels[x, y] = labels[x + 1, y];
-                            }
-                            if (labels[x, y] < labels[x, y + 1])
-                            {
-                                labels[x, y] = labels[x, y + 1];
-                            }
-                            if (labels[x, y] < labels[x + 1, y + 1])
-                            {
-                                labels[x, y] = labels[x + 1, y + 1];
-                            }
-                            if (tmp != labels[x, y])
-                                changed = true;
-                            dataPtrOriginal -= nChan;
-                        }
-                        //at the end of the line advance the pointer by the aligment bytes (padding)
-                        dataPtrOriginal -= padding;
-                    }
-
-
-                }
+                Console.WriteLine(pieces.Count);
+                */
 
                 return labels;
 
             }
 
         }
+
+        public List<int[]> getPiecesPosition(uint[,] labels)
+        {
+            int width = labels.GetLength(0);
+            int height = labels.GetLength(1);
+
+            List<int[]> Pieces_positions = new List<int[]>();
+            int[] piece_vector = new int[4];
+
+
+            var map = new Dictionary<uint, int[]>(30);
+
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if(labels[x,y] != UInt32.MaxValue)
+                    {
+                        if (map.ContainsKey(labels[x, y]))
+                        {
+
+                        }
+                    }
+
+                }
+            }
+
+            
+
+            piece_vector[0] = 65;   // x- Top-Left 
+            piece_vector[1] = 385;  // y- Top-Left
+            piece_vector[2] = 1089; // x- Bottom-Right
+            piece_vector[3] = 1411; // y- Bottom-Right
+
+            Pieces_positions.Add(piece_vector);
+
+
+            return Pieces_positions;
+
+    }
     }
 }
