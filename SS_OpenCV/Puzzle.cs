@@ -8,7 +8,7 @@ namespace SS_OpenCV
 {
     internal class Puzzle
     {
-        public static int[,] getLabels(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        public static int[,] getLabels(Image<Bgr, byte> img)
         {
 
             unsafe
@@ -16,9 +16,6 @@ namespace SS_OpenCV
                 MIplImage m = img.MIplImage;
                 byte* dataPtrOriginal = (byte*)m.imageData.ToPointer();
                 byte* originalPtr = dataPtrOriginal;
-
-                MIplImage c = imgCopy.MIplImage;
-                byte* dataPtrCopy = (byte*)c.imageData.ToPointer();
 
                 int width = img.Width;
                 int height = img.Height;
@@ -45,19 +42,17 @@ namespace SS_OpenCV
                         }
                         else
                         {
-                            dataPtrOriginal[0] = 0;
+                           /* dataPtrOriginal[0] = 0;
                             dataPtrOriginal[1] = 0;
                             dataPtrOriginal[2] = 0;
-
+                            */
                             labels[x, y] = 0;
                         }
 
                         dataPtrOriginal += nChan;
-                        dataPtrCopy += nChan;
                     }
                     //at the end of the line advance the pointer by the aligment bytes (padding)
                     dataPtrOriginal += padding;
-                    dataPtrCopy += padding;
                 }
 
                 dataPtrOriginal = originalPtr;
@@ -158,9 +153,6 @@ namespace SS_OpenCV
 
 
                 }
-
-
-                labels[0, 0] = labels[0, 0];
 
                 return labels;
 

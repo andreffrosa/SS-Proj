@@ -2300,7 +2300,7 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                int[,] labels = Puzzle.getLabels(img, imgCopy);
+                int[,] labels = Puzzle.getLabels(img);
             }
 
             Image<Bgr, byte> dummyImg = img.Copy();
