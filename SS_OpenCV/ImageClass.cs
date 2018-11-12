@@ -2283,9 +2283,8 @@ namespace SS_OpenCV
             ConvertToBW(img, Array.IndexOf(var, var.Max()));
         }
 
-        public static void puzzle(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, out List<int[]> Pieces_positions, out List<int> Pieces_angle, int level)
+        public static Image<Bgr, byte> puzzle(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, out List<int[]> Pieces_positions, out List<int> Pieces_angle, int level)
         {
-
             unsafe
             {
                 MIplImage m = img.MIplImage;
@@ -2301,165 +2300,24 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                int[,] labels = new int[img.Width, img.Height];
-                bool changed = true;
-                int curr_label = 1;
-
-                int back_b = dataPtrOriginal[0], back_g = dataPtrOriginal[1], back_r = dataPtrOriginal[2];
-
-                changed = false;
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        if (back_b != dataPtrOriginal[0] || back_g != dataPtrOriginal[1] || back_r != dataPtrOriginal[2])
-                        {
-                            //new piece
-                            labels[x, y] = curr_label++;
-                            changed = true;
-                        }
-                        else
-                        {
-                            dataPtrOriginal[0] = 0;
-                            dataPtrOriginal[1] = 0;
-                            dataPtrOriginal[2] = 0;
-
-                            labels[x, y] = 0;
-                        }
-
-                        dataPtrOriginal += nChan;
-                        dataPtrCopy += nChan;
-                    }
-                    //at the end of the line advance the pointer by the aligment bytes (padding)
-                    dataPtrOriginal += padding;
-                    dataPtrCopy += padding;
-                }
-
-                dataPtrOriginal = originalPtr;
-                while (changed)
-                {
-                    changed = false;
-                    for (int y = 1; y < height-1; y++)
-                    {
-                        for (int x = 1; x < width-1; x++)
-                        {
-                            int tmp = labels[x, y];
-                            if (labels[x,y] < labels[x-1, y-1] )
-                            {
-                                labels[x, y] = labels[x - 1, y - 1];
-                            }
-                            if (labels[x, y] < labels[x, y - 1])
-                            {
-                                labels[x, y] = labels[x, y - 1];
-                            }
-                            if (labels[x, y] < labels[x - 1, y])
-                            {
-                                labels[x, y] = labels[x - 1, y];
-                            }
-                            if (labels[x, y] < labels[x + 1, y - 1])
-                            {
-                                labels[x, y] = labels[x + 1, y - 1];
-                            }
-                            if (labels[x, y] < labels[x - 1, y + 1])
-                            {
-                                labels[x, y] = labels[x - 1, y + 1];
-                            }
-                            if (labels[x, y] < labels[x + 1, y])
-                            {
-                                labels[x, y] = labels[x + 1, y];
-                            }
-                            if (labels[x, y] < labels[x, y + 1])
-                            {
-                                labels[x, y] = labels[x, y + 1];
-                            }
-                            if (labels[x, y] < labels[x + 1, y + 1])
-                            {
-                                labels[x, y] = labels[x + 1, y + 1];
-                            }
-                            if (tmp != labels[x, y])
-                                changed = true;
-                            //labels[x, y] = (labels[x, y] < labels[x - 1, y - 1]) ? labels[x - 1, y - 1] : labels[x, y];
-
-                            dataPtrOriginal += nChan;
-                        }
-                        //at the end of the line advance the pointer by the aligment bytes (padding)
-                        dataPtrOriginal += padding;
-                    }
-
-                    for (int y = height-2; y > 0; y--)
-                        {
-                            for (int x = width-2; x > 0; x--)
-                            {
-                            int tmp = labels[x, y];
-                            if (labels[x, y] < labels[x - 1, y - 1])
-                            {
-                                labels[x, y] = labels[x - 1, y - 1];
-                            }
-                            if (labels[x, y] < labels[x, y - 1])
-                            {
-                                labels[x, y] = labels[x, y - 1];
-                            }
-                            if (labels[x, y] < labels[x - 1, y])
-                            {
-                                labels[x, y] = labels[x - 1, y];
-                            }
-                            if (labels[x, y] < labels[x + 1, y - 1])
-                            {
-                                labels[x, y] = labels[x + 1, y - 1];
-                            }
-                            if (labels[x, y] < labels[x - 1, y + 1])
-                            {
-                                labels[x, y] = labels[x - 1, y + 1];
-                            }
-                            if (labels[x, y] < labels[x + 1, y])
-                            {
-                                labels[x, y] = labels[x + 1, y];
-                            }
-                            if (labels[x, y] < labels[x, y + 1])
-                            {
-                                labels[x, y] = labels[x, y + 1];
-                            }
-                            if (labels[x, y] < labels[x + 1, y + 1])
-                            {
-                                labels[x, y] = labels[x + 1, y + 1];
-                            }
-                            if (tmp != labels[x, y])
-                                changed = true;
-                            dataPtrOriginal -= nChan;
-                            }
-                        //at the end of the line advance the pointer by the aligment bytes (padding)
-                        dataPtrOriginal -= padding;
-                    }
-
-
-                }
-
-
-                labels[0, 0] = labels[0, 0];
-
+                int[,] labels = Puzzle.getLabels(img, imgCopy);
             }
 
-
-
-
-
-
-
-
-
-
+            Image<Bgr, byte> dummyImg = img.Copy();
             Pieces_positions = new List<int[]>();
-            int[] dummy_vector = new int[4];
+            int[] piece_vector = new int[4];
 
-            dummy_vector[0] = 65;
-            dummy_vector[1] = 385;
-            dummy_vector[2] = 1089;
-            dummy_vector[3] = 1411;
+            piece_vector[0] = 65;   // x- Top-Left 
+            piece_vector[1] = 385;  // y- Top-Left
+            piece_vector[2] = 1089; // x- Bottom-Right
+            piece_vector[3] = 1411; // y- Bottom-Right
 
-            Pieces_positions.Add(dummy_vector);
+            Pieces_positions.Add(piece_vector);
 
-            Pieces_angle = new List<int>();
-            Pieces_angle.Add(0);
+            Pieces_angle = new List<int>(); 
+            Pieces_angle.Add(0); // angle
+
+            return dummyImg;
         }
 
 
