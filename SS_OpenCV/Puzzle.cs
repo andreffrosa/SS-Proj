@@ -186,13 +186,14 @@ namespace SS_OpenCV
 
         }
 
-        public static List<int[]> getPiecesPosition(uint[,] labels, out List<int[]> Pieces_positions, out List<int> Pieces_angle)
+        public static void getPiecesPosition(uint[,] labels, out List<int[]> Pieces_positions, out List<int> Pieces_angle, out List<double> angles_rads)
         {
             int width = labels.GetLength(0);
             int height = labels.GetLength(1);
 
             Pieces_positions = new List<int[]>();
             Pieces_angle = new List<int>();
+            angles_rads = new List<double>();
             int[] piece_vector;
 
 
@@ -202,11 +203,15 @@ namespace SS_OpenCV
 
             int[] x_top_left = new int[10];
             int[] y_top_left = new int[10];
+            int[] helper_point_x = new int[10];
+            int[] helper_point_y = new int[10];
 
-            for(int i = 0; i< 10; i++)
+            for (int i = 0; i< 10; i++)
             {
                 x_top_left[i] = Int32.MaxValue;
                 y_top_left[i] = Int32.MaxValue;
+                helper_point_x[i] = -1;
+                helper_point_y[i] = -1;
             }
 
             int[] x_bottom_right = new int[10];
@@ -224,6 +229,11 @@ namespace SS_OpenCV
                         {
                             values[curr_pos] = labels[x, y];
                             index = curr_pos++;
+                        }
+                        if(helper_point_x[index] == -1 )
+                        {
+                            helper_point_x[index] = x;
+                            helper_point_y[index] = y;
                         }
 
                         if (x_top_left[index] > x)
@@ -247,15 +257,31 @@ namespace SS_OpenCV
                 piece_vector[1] = y_top_left[i];  // y- Top-Left
                 piece_vector[2] = x_bottom_right[i]; // x- Bottom-Right
                 piece_vector[3] = y_bottom_right[i]; // y- Bottom-Right
-
                 Pieces_positions.Add(piece_vector);
-                Pieces_angle.Add(0);
-            }
 
-            return Pieces_positions;
+                if (helper_point_x[i] == x_top_left[i] && helper_point_y[i] == y_top_left[i])
+                {
+                    // No rotation needed
+                    Pieces_angle.Add(0);
+
+                } else
+                {
+                    //Calculate Angle
+                    double oppositive = y_top_left[i] - helper_point_y[i];
+                    double adjancent = helper_point_x[i] - x_top_left[i];
+                    double rads = Math.Tanh(oppositive / adjancent);
+                    angles_rads.Add(rads);
+                    int angle = RadsToDegrees( rads );
+                    Pieces_angle.Add(angle);
+                }
+            }
         }
 
-
+        const double RadToDegreeFactor = 180.0 / Math.PI;
+        public static int RadsToDegrees(double rads)
+        {
+            return (int) Math.Round(rads * RadToDegreeFactor);
+        }
 
     }
 }

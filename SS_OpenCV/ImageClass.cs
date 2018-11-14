@@ -2302,7 +2302,9 @@ namespace SS_OpenCV
 
                 uint[,] labels = Puzzle.getLabels(img);
 
-                Puzzle.getPiecesPosition(labels, out Pieces_positions, out Pieces_angle);
+                List<double> angles_rads = new List<double>();
+
+                Puzzle.getPiecesPosition(labels, out Pieces_positions, out Pieces_angle, out angles_rads);
 
                 Console.WriteLine("--------Image START--------");
                 Pieces_positions.ForEach((p) => {
