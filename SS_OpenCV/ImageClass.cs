@@ -2302,9 +2302,16 @@ namespace SS_OpenCV
 
                 uint[,] labels = Puzzle.getLabels(img);
 
-                List<double> angles_rads = new List<double>();
+                List<double> angles_rads;
 
-                Puzzle.getPiecesPosition(labels, out Pieces_positions, out Pieces_angle, out angles_rads);
+                List<Image<Bgr, byte>> images_pieces;
+                Puzzle.getPiecesPosition(img, labels, out Pieces_positions, out Pieces_angle, out images_pieces);
+
+                
+
+                //Puzzle.GetImagesPieces(img, out images_pieces, Pieces_positions, angles_rads);
+
+
 
                 Console.WriteLine("--------Image START--------");
                 Pieces_positions.ForEach((p) => {
@@ -2319,7 +2326,8 @@ namespace SS_OpenCV
 
 
                 Image<Bgr, byte> dummyImg = img.Copy();
-                return dummyImg;
+               // return dummyImg;
+                return images_pieces[1];
             }
             
             
