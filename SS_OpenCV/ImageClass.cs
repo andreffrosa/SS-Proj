@@ -2302,24 +2302,25 @@ namespace SS_OpenCV
 
                 uint[,] labels = Puzzle.getLabels(img);
 
+                Puzzle.getPiecesPosition(labels, out Pieces_positions, out Pieces_angle);
 
+                Console.WriteLine("--------Image START--------");
+                Pieces_positions.ForEach((p) => {
+                    Console.WriteLine("----PIECE_START----");
+                    Console.WriteLine("X TOP: " + p[0]);
+                    Console.WriteLine("Y TOP: " + p[1]);
+                    Console.WriteLine("X BOTTOM: " + p[2]);
+                    Console.WriteLine("X BOTTOM: " + p[3]);
+                    Console.WriteLine("------PIECE_END----");
+                });
+                Console.WriteLine("--------Image END---------");
+
+
+                Image<Bgr, byte> dummyImg = img.Copy();
+                return dummyImg;
             }
-
-            Image<Bgr, byte> dummyImg = img.Copy();
-            Pieces_positions = new List<int[]>();
-            int[] piece_vector = new int[4];
-
-            piece_vector[0] = 65;   // x- Top-Left 
-            piece_vector[1] = 385;  // y- Top-Left
-            piece_vector[2] = 1089; // x- Bottom-Right
-            piece_vector[3] = 1411; // y- Bottom-Right
-
-            Pieces_positions.Add(piece_vector);
-
-            Pieces_angle = new List<int>(); 
-            Pieces_angle.Add(0); // angle
-
-            return dummyImg;
+            
+            
         }
 
 
