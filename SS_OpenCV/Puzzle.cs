@@ -226,12 +226,12 @@ namespace SS_OpenCV
                             index = curr_pos++;
                         }
 
-                        if (x_top_left[index] > x || y_bottom_right[index] > y)
+                        if (x_top_left[index] > x)
                         {
                             x_top_left[index] = x;
                             y_top_left[index] = y;
                         }
-                        if (x_bottom_right[index] < x || y_bottom_right[index] < y)
+                        if (x_bottom_right[index] <= x)
                         {
                             x_bottom_right[index] = x;
                             y_bottom_right[index] = y;

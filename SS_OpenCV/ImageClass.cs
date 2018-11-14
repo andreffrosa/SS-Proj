@@ -2310,7 +2310,7 @@ namespace SS_OpenCV
                     Console.WriteLine("X TOP: " + p[0]);
                     Console.WriteLine("Y TOP: " + p[1]);
                     Console.WriteLine("X BOTTOM: " + p[2]);
-                    Console.WriteLine("X BOTTOM: " + p[3]);
+                    Console.WriteLine("Y BOTTOM: " + p[3]);
                     Console.WriteLine("------PIECE_END----");
                 });
                 Console.WriteLine("--------Image END---------");
