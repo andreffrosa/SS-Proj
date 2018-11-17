@@ -632,8 +632,9 @@ namespace SS_OpenCV
             }
         }
 
-        public static void MeanC(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        public static void Mean_solutionB(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
+            //TODO
             unsafe
             {
                 //Original Image
@@ -1503,6 +1504,7 @@ namespace SS_OpenCV
         {
             unsafe
             {
+                //TODO
                 //Original Image
                 MIplImage m = img.MIplImage;
                 byte* dataPtrOriginal = (byte*)m.imageData.ToPointer();
@@ -2048,7 +2050,7 @@ namespace SS_OpenCV
             }
         }
 
-        public static int[] Histogram_Gray(Emgu.CV.Image<Bgr, byte> img)
+        public static long[] Histogram_Gray(Emgu.CV.Image<Bgr, byte> img)
         {
             unsafe
             {
@@ -2062,7 +2064,7 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                int[] hist = new int[256];
+                long[] hist = new long[256];
 
                 for (int i = 0; i < 256; i++)
                 {
@@ -2092,7 +2094,7 @@ namespace SS_OpenCV
             }
         }
 
-        public static int[,] Histogram_RGB(Emgu.CV.Image<Bgr, byte> img)
+        public static long[,] Histogram_RGB(Emgu.CV.Image<Bgr, byte> img)
         {
             unsafe
             {
@@ -2106,7 +2108,7 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                int[,] hist = new int[3, 256];
+                long[,] hist = new long[3, 256];
                 for (int j = 0; j < 3; j++)
                     for (int i = 0; i < 256; i++)
                     {
@@ -2140,7 +2142,7 @@ namespace SS_OpenCV
             }
         }
 
-        public static int[,] Histogram_All(Emgu.CV.Image<Bgr, byte> img)
+        public static long[,] Histogram_All(Emgu.CV.Image<Bgr, byte> img)
         {
             unsafe
             {
@@ -2154,7 +2156,7 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                int[,] hist = new int[4, 256];
+                long[,] hist = new long[4, 256];
                 for (int j = 0; j < 4; j++)
                     for (int i = 0; i < 256; i++)
                     {
@@ -2248,7 +2250,7 @@ namespace SS_OpenCV
         {
             double pixel_numb = img.Width * img.Height;
 
-            int[] hist = Histogram_Gray(img);
+            long[] hist = Histogram_Gray(img);
 
             double[] var = new double[hist.Length];
 
@@ -2283,6 +2285,8 @@ namespace SS_OpenCV
             ConvertToBW(img, Array.IndexOf(var, var.Max()));
         }
 
+
+
         public static Image<Bgr, byte> puzzle(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, out List<int[]> Pieces_positions, out List<int> Pieces_angle, int level)
         {
             Puzzle PuzzleOgj = new Puzzle(img);
@@ -2304,5 +2308,352 @@ namespace SS_OpenCV
 
             return FinalImage;
         }
+
+        public static void Rotation_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float angle)
+        {
+            unsafe
+            {
+                // get the image pointer
+                MIplImage m = img.MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer();
+                int width = img.Width;
+                int height = img.Height;
+                int nChan = m.nChannels; // number of channels - 3
+                int widthStep = m.widthStep;
+                int padding = m.widthStep - m.nChannels * m.width; // alinhament bytes (padding)
+
+                MIplImage m_copy = imgCopy.MIplImage;
+                byte* dataPtr_copy = (byte*)m_copy.imageData.ToPointer();
+
+                // aux variables
+                double halfHeight = height / 2.0;
+                double halfWidth = width / 2.0;
+
+                double cos = Math.Cos(angle);
+                double sin = Math.Sin(angle);
+
+                double xOrig;
+                double yOrig;
+
+                byte* copy_from;
+
+                double aux_x;
+                double aux_y;
+
+                // Bilinear Interpolation aux variables
+                double yOffset, yComplement;
+                double xOffset, xComplement;
+
+                int iMin, iMax, jMin, jMax;
+
+                byte[,] colorsPerNeighbor = new byte[4, 3];
+
+                double[,] tmpValues = new double[3, 2];
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        aux_x = x - halfWidth;
+                        aux_y = halfHeight - y;
+
+                        xOrig = aux_x * cos - aux_y * sin + halfWidth;
+                        yOrig = halfHeight - aux_x * sin - aux_y * cos;
+
+                        // Pixels that fall outside of the original image are painted black
+                        if (yOrig >= 0 && yOrig < height - 1 && xOrig >= 0 && xOrig < width - 1)
+                        {
+                            // Get the rows and columns of the neighbors to the original position
+                            iMin = (int)yOrig;
+                            iMax = (int)Math.Ceiling(yOrig);
+                            jMin = (int)xOrig;
+                            jMax = (int)Math.Ceiling(xOrig);
+
+                            yOffset = yOrig - iMin;
+                            xOffset = xOrig - jMin;
+
+                            yComplement = 1 - yOffset;
+                            xComplement = 1 - xOffset;
+
+                            // Upper Left Neighbor
+                            copy_from = dataPtr_copy + iMin * widthStep + jMin * nChan;
+
+                            colorsPerNeighbor[0, 0] = copy_from[0];
+                            colorsPerNeighbor[0, 1] = copy_from[1];
+                            colorsPerNeighbor[0, 2] = copy_from[2];
+
+                            // Upper Right Neighbor
+                            copy_from += nChan;
+
+                            colorsPerNeighbor[1, 0] = copy_from[0];
+                            colorsPerNeighbor[1, 1] = copy_from[1];
+                            colorsPerNeighbor[1, 2] = copy_from[2];
+
+                            // Lower Right Neighbor
+                            copy_from += widthStep;
+
+                            colorsPerNeighbor[2, 0] = copy_from[0];
+                            colorsPerNeighbor[2, 1] = copy_from[1];
+                            colorsPerNeighbor[2, 2] = copy_from[2];
+
+                            // Lower Left Neighbor
+                            copy_from -= nChan;
+
+                            colorsPerNeighbor[3, 0] = copy_from[0];
+                            colorsPerNeighbor[3, 1] = copy_from[1];
+                            colorsPerNeighbor[3, 2] = copy_from[2];
+
+                            // Get temporary values for upper x interpolation for each color component
+                            tmpValues[0, 0] = xComplement * colorsPerNeighbor[0, 0] + xOffset * colorsPerNeighbor[1, 0];
+                            tmpValues[1, 0] = xComplement * colorsPerNeighbor[0, 1] + xOffset * colorsPerNeighbor[1, 1];
+                            tmpValues[2, 0] = xComplement * colorsPerNeighbor[0, 2] + xOffset * colorsPerNeighbor[1, 2];
+
+                            // Get temporary vxComplementer x interpolation for each color component
+                            tmpValues[0, 1] = xComplement * colorsPerNeighbor[3, 0] + xOffset * colorsPerNeighbor[2, 0];
+                            tmpValues[1, 1] = xComplement * colorsPerNeighbor[3, 1] + xOffset * colorsPerNeighbor[2, 1];
+                            tmpValues[2, 1] = xComplement * colorsPerNeighbor[3, 2] + xOffset * colorsPerNeighbor[2, 2];
+
+                            // Make final y interpolation
+                            dataPtr[0] = (byte)Math.Round(yComplement * tmpValues[0, 0] + yOffset * tmpValues[0, 1]);
+                            dataPtr[1] = (byte)Math.Round(yComplement * tmpValues[1, 0] + yOffset * tmpValues[1, 1]);
+                            dataPtr[2] = (byte)Math.Round(yComplement * tmpValues[2, 0] + yOffset * tmpValues[2, 1]);
+                        }
+                        else
+                        {
+                            dataPtr[0] = 0;
+                            dataPtr[1] = 0;
+                            dataPtr[2] = 0;
+                        }
+                        dataPtr += nChan;
+                    }
+                    dataPtr += padding;
+                }
+            }
+        }
+
+        public static void Scale_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float scaleFactor)
+        {
+            unsafe
+            {
+                // get the image pointer
+                MIplImage m = img.MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer();
+                int width = img.Width;
+                int height = img.Height;
+                int nChan = m.nChannels; // number of channels - 3
+                int widthStep = m.widthStep;
+
+                MIplImage m_copy = imgCopy.MIplImage;
+                byte* dataPtr_copy = (byte*)m_copy.imageData.ToPointer();
+
+                byte* copy_from;
+                byte* copy_to;
+
+                double dy_diff;
+                double dx_diff;
+
+                // Bilinear Interpolation aux variables
+                double yOffset, yComplement;
+                double xOffset, xComplement;
+
+                int iMin, iMax, jMin, jMax;
+
+                byte[,] colorsPerNeighbor = new byte[4, 3];
+
+                double[,] tmpValues = new double[3, 2];
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        // get pixel address
+                        dx_diff = x / scaleFactor;
+                        dy_diff = y / scaleFactor;
+
+                        copy_to = dataPtr + y * widthStep + x * nChan;
+
+                        if (dy_diff >= 0 && dy_diff < height && dx_diff >= 0 && dx_diff < width)
+                        {
+                            // Get the rows and columns of the neighbors to the original position
+                            iMin = (int)dy_diff;
+                            iMax = (int)Math.Ceiling(dy_diff);
+                            jMin = (int)dx_diff;
+                            jMax = (int)Math.Ceiling(dx_diff);
+
+                            yOffset = dy_diff - iMin;
+                            xOffset = dx_diff - jMin;
+
+                            yComplement = 1 - yOffset;
+                            xComplement = 1 - xOffset;
+
+                            // Upper Left Neighbor
+                            copy_from = dataPtr_copy + iMin * widthStep + jMin * nChan;
+
+                            colorsPerNeighbor[0, 0] = copy_from[0];
+                            colorsPerNeighbor[0, 1] = copy_from[1];
+                            colorsPerNeighbor[0, 2] = copy_from[2];
+
+                            // Upper Right Neighbor
+                            copy_from += nChan;
+
+                            colorsPerNeighbor[1, 0] = copy_from[0];
+                            colorsPerNeighbor[1, 1] = copy_from[1];
+                            colorsPerNeighbor[1, 2] = copy_from[2];
+
+                            // Lower Right Neighbor
+                            copy_from += widthStep;
+
+                            colorsPerNeighbor[2, 0] = copy_from[0];
+                            colorsPerNeighbor[2, 1] = copy_from[1];
+                            colorsPerNeighbor[2, 2] = copy_from[2];
+
+                            // Lower Left Neighbor
+                            copy_from -= nChan;
+
+                            colorsPerNeighbor[3, 0] = copy_from[0];
+                            colorsPerNeighbor[3, 1] = copy_from[1];
+                            colorsPerNeighbor[3, 2] = copy_from[2];
+
+                            // Get temporary values for upper x interpolation for each color component
+                            tmpValues[0, 0] = xComplement * colorsPerNeighbor[0, 0] + xOffset * colorsPerNeighbor[1, 0];
+                            tmpValues[1, 0] = xComplement * colorsPerNeighbor[0, 1] + xOffset * colorsPerNeighbor[1, 1];
+                            tmpValues[2, 0] = xComplement * colorsPerNeighbor[0, 2] + xOffset * colorsPerNeighbor[1, 2];
+
+                            // Get temporary vxComplementer x interpolation for each color component
+                            tmpValues[0, 1] = xComplement * colorsPerNeighbor[3, 0] + xOffset * colorsPerNeighbor[2, 0];
+                            tmpValues[1, 1] = xComplement * colorsPerNeighbor[3, 1] + xOffset * colorsPerNeighbor[2, 1];
+                            tmpValues[2, 1] = xComplement * colorsPerNeighbor[3, 2] + xOffset * colorsPerNeighbor[2, 2];
+
+                            // Make final y interpolation
+                            copy_to[0] = (byte)Math.Round(yComplement * tmpValues[0, 0] + yOffset * tmpValues[0, 1]);
+                            copy_to[1] = (byte)Math.Round(yComplement * tmpValues[1, 0] + yOffset * tmpValues[1, 1]);
+                            copy_to[2] = (byte)Math.Round(yComplement * tmpValues[2, 0] + yOffset * tmpValues[2, 1]);
+                        }
+                        else
+                        {
+                            copy_to[0] = 0;
+                            copy_to[1] = 0;
+                            copy_to[2] = 0;
+                        }
+
+                    }
+                }
+            }
+        }
+
+        public static void Scale_point_xy_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float scaleFactor, int centerX, int centerY)
+        {
+            unsafe
+            {
+                // get the image pointer
+                MIplImage m = img.MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer();
+                int width = img.Width;
+                int height = img.Height;
+                int nChan = m.nChannels; // number of channels - 3
+                int padding = m.widthStep - m.nChannels * m.width; // alinhament bytes (padding)
+                int widthStep = m.widthStep;
+
+                MIplImage m_copy = imgCopy.MIplImage;
+                byte* dataPtr_copy = (byte*)m_copy.imageData.ToPointer();
+
+                int halfHeight = height / 2;    // needs to be int division to match openCV results
+                int halfWidth = width / 2;    // needs to be int division to match openCV results
+
+                byte* copy_from;
+                byte* copy_to;
+
+                double dy_diff;
+                double dx_diff;
+
+                // Bilinear Interpolation aux variables
+                double yOffset, yComplement;
+                double xOffset, xComplement;
+
+                int iMin, iMax, jMin, jMax;
+
+                byte[,] colorsPerNeighbor = new byte[4, 3];
+
+                double[,] tmpValues = new double[3, 2];
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        // get pixel address
+                        dx_diff = (x - halfWidth) / scaleFactor + centerX;
+                        dy_diff = (y - halfHeight) / scaleFactor + centerY;
+
+                        copy_to = dataPtr + y * widthStep + x * nChan;
+
+                        if (dy_diff >= 0 && dy_diff < height && dx_diff >= 0 && dx_diff < width)
+                        {
+                            // Get the rows and columns of the neighbors to the original position
+                            iMin = (int)dy_diff;
+                            iMax = (int)Math.Ceiling(dy_diff);
+                            jMin = (int)dx_diff;
+                            jMax = (int)Math.Ceiling(dx_diff);
+
+                            yOffset = dy_diff - iMin;
+                            xOffset = dx_diff - jMin;
+
+                            xComplement = 1 - xOffset;
+                            yComplement = 1 - yOffset;
+
+                            // Upper Left Neighbor
+                            copy_from = dataPtr_copy + iMin * widthStep + jMin * nChan;
+
+                            colorsPerNeighbor[0, 0] = copy_from[0];
+                            colorsPerNeighbor[0, 1] = copy_from[1];
+                            colorsPerNeighbor[0, 2] = copy_from[2];
+
+                            // Upper Right Neighbor
+                            copy_from += nChan;
+
+                            colorsPerNeighbor[1, 0] = copy_from[0];
+                            colorsPerNeighbor[1, 1] = copy_from[1];
+                            colorsPerNeighbor[1, 2] = copy_from[2];
+
+                            // Lower Right Neighbor
+                            copy_from += widthStep;
+
+                            colorsPerNeighbor[2, 0] = copy_from[0];
+                            colorsPerNeighbor[2, 1] = copy_from[1];
+                            colorsPerNeighbor[2, 2] = copy_from[2];
+
+                            // Lower Left Neighbor
+                            copy_from -= nChan;
+
+                            colorsPerNeighbor[3, 0] = copy_from[0];
+                            colorsPerNeighbor[3, 1] = copy_from[1];
+                            colorsPerNeighbor[3, 2] = copy_from[2];
+
+                            // Get temporary values for upper x interpolation for each color component
+                            tmpValues[0, 0] = xComplement * colorsPerNeighbor[0, 0] + xOffset * colorsPerNeighbor[1, 0];
+                            tmpValues[1, 0] = xComplement * colorsPerNeighbor[0, 1] + xOffset * colorsPerNeighbor[1, 1];
+                            tmpValues[2, 0] = xComplement * colorsPerNeighbor[0, 2] + xOffset * colorsPerNeighbor[1, 2];
+
+                            // Get temporary values for lower x interpolation for each color component
+                            tmpValues[0, 1] = xComplement * colorsPerNeighbor[3, 0] + xOffset * colorsPerNeighbor[2, 0];
+                            tmpValues[1, 1] = xComplement * colorsPerNeighbor[3, 1] + xOffset * colorsPerNeighbor[2, 1];
+                            tmpValues[2, 1] = xComplement * colorsPerNeighbor[3, 2] + xOffset * colorsPerNeighbor[2, 2];
+
+                            // Make final y interpolation
+                            copy_to[0] = (byte)Math.Round(yComplement * tmpValues[0, 0] + yOffset * tmpValues[0, 1]);
+                            copy_to[1] = (byte)Math.Round(yComplement * tmpValues[1, 0] + yOffset * tmpValues[1, 1]);
+                            copy_to[2] = (byte)Math.Round(yComplement * tmpValues[2, 0] + yOffset * tmpValues[2, 1]);
+                        }
+                        else
+                        {
+                            copy_to[0] = 0;
+                            copy_to[1] = 0;
+                            copy_to[2] = 0;
+                        }
+
+                    }
+                }
+            }
+        }
+
     }
 }

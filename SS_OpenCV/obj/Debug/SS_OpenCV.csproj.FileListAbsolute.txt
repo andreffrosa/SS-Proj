@@ -195,3 +195,6 @@ C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_Ope
 C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.exe
 C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
 C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.DoubleInputBox.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.DoubleInputBox.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.HistogramGray.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.HistogramRGB.resources

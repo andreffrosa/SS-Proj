@@ -94,6 +94,18 @@
     <Compile Include="DoubleInputBox.Designer.cs">
       <DependentUpon>DoubleInputBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="HistogramRGB.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HistogramRGB.Designer.cs">
+      <DependentUpon>HistogramRGB.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HistogramGray.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HistogramGray.Designer.cs">
+      <DependentUpon>HistogramGray.cs</DependentUpon>
+    </Compile>
     <Compile Include="Histogram.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -122,6 +134,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DoubleInputBox.resx">
       <DependentUpon>DoubleInputBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HistogramRGB.resx">
+      <DependentUpon>HistogramRGB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HistogramGray.resx">
+      <DependentUpon>HistogramGray.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Histogram.resx">
       <DependentUpon>Histogram.cs</DependentUpon>

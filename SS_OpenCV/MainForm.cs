@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -445,6 +446,113 @@ namespace SS_OpenCV
             ImageClass.Scale_point_xy(img, img.Copy(), scaleFactor, mouseX, mouseY);
 
             ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void medianToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            ImageClass.Median(img, img.Copy());
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+
+        private void histogramBWToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            HistogramGray hist = new HistogramGray(ImageClass.Histogram_Gray(img));
+            hist.ShowDialog();
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void blakcAndWhiteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            InputBox form = new InputBox("Threshold");
+            form.ValueTextBox.Text = "positive integer";
+            form.ShowDialog();
+            // Have to specify any number format and invariant culture to accept numbers separated by dots or commas
+            bool numericScaleFactor = int.TryParse(form.ValueTextBox.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out int threshold);
+
+            if (!numericScaleFactor)
+                return;
+
+            ImageClass.ConvertToBW(img, threshold);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void blackAndWhiteOtsuToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            ImageClass.ConvertToBW_Otsu(img);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void histogramRGBToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            HistogramRGB hist = new HistogramRGB(ImageClass.Histogram_RGB(img));
+            hist.ShowDialog();
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void puzzleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+            Image<Bgr, byte> FinalImage = ImageClass.puzzle(img, img.Copy(), out List<int[]> Pieces_positions, out List<int> Pieces_angle, -1);
+
+            ImageViewer.Image = FinalImage.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
 
             Cursor = Cursors.Default; // normal cursor 
