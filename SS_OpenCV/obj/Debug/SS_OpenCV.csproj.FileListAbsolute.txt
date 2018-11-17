@@ -180,3 +180,18 @@ E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CoreCompileInputs.cache
 E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CopyComplete
 E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.exe
 E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\bin\Debug\SS_OpenCV.exe.config
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\bin\Debug\SS_OpenCV.exe
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\bin\Debug\SS_OpenCV.pdb
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.csprojAssemblyReference.cache
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.AuthorsForm.resources
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.Histogram.resources
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.InputBox.resources
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.MainForm.resources
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.Properties.Resources.resources
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.GenerateResource.cache
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CoreCompileInputs.cache
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CopyComplete
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.exe
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
+C:\Users\Acer\Desktop\FCT\4º Ano\1º Semestre\SS\Praticas\TP1\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.DoubleInputBox.resources
