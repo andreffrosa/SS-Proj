@@ -254,7 +254,12 @@ namespace SS_OpenCV
                     newImagePointer += padding_new;
                 }
 
-                return tmp;
+                if (angle != 0.0)
+                {
+                    //TODO fix borders
+                }
+
+                    return tmp;
             }
         }
 
@@ -280,6 +285,7 @@ namespace SS_OpenCV
                 {
                     if (labels[x, y] != UInt32.MaxValue)
                     {
+                        //TODO if a value is already set ignore / overwrite depending
                         if (labels[x, y - 1] == UInt32.MaxValue && labels[x - 1, y] == UInt32.MaxValue && labels[x - 1, y + 2] == UInt32.MaxValue)
                         {
                             // Found a top left corner
@@ -349,9 +355,105 @@ namespace SS_OpenCV
             }
         }
 
+        private SideValues compareSides(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
+        {
+            unsafe
+            {
+                SideValues sideValues = new SideValues(0, 0);
+
+                MIplImage image1 = img1.MIplImage;
+                byte* image1Pointer = (byte*)image1.imageData.ToPointer();
+                int nChan1 = image1.nChannels;
+                int padding1 = image1.widthStep - image1.nChannels * image1.width;
+                int step1 = image1.widthStep;
+                int width1 = img1.Width;
+                int height1 = img1.Height;
+
+                MIplImage image2 = img2.MIplImage;
+                byte* image2Pointer = (byte*)image2.imageData.ToPointer();
+                int nChan2 = image2.nChannels;
+                int padding2 = image2.widthStep - image2.nChannels * image2.width;
+                int step2 = image2.widthStep;
+                int width2 = img2.Width;
+                int height2 = img2.Height;
+
+                // top = 0; right = 1; bottom = 2; left = 3;
+
+                //TOP
+                double diff = 0;
+                double scale = (width1 > width2) ? width1 / (double)width2 : width2 / (double)width1;
+                if (width1 > width2)
+                {
+                    for (int y = 0; y < width1; y++)
+                    {
+                        diff += ( Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2]) ) / 3.0 / 255;
+
+                        image1Pointer += nChan1;
+                        image2Pointer += (int) Math.Round(nChan2 / scale);
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < width1; y++)
+                    {
+                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2]) ) / 3.0 / 255;
+
+                        image2Pointer += nChan1;
+                        image1Pointer += (int)Math.Round(nChan1 / scale);
+                    }
+                }
+
+                Console.WriteLine("DIFF: " + diff);
+                
+                return sideValues;
+            }
+        }
+
+        private struct SideValues
+        {
+            public int side;
+            public double value;
+            public SideValues(int side, double value)
+            {
+                this.side = side;
+                this.value = value;
+            }
+        }
+
         public Image<Bgr, byte> getFinalImage()
         {
-            return images_pieces[1];
+            SideValues[,] best_diffs = new SideValues[images_pieces.Count, images_pieces.Count];
+
+            while (images_pieces.Count != 1)
+            {
+                int curr_pos = 0;
+                foreach (Image<Bgr, byte> curr_piece in images_pieces)
+                {
+                    int next_pos = 0;
+                    foreach (Image<Bgr, byte> next_piece in images_pieces)
+                    {
+                        if(curr_pos == next_pos || curr_pos > next_pos)
+                        {
+                            //Be gone
+                        }
+
+                        else
+                        {
+                            Console.WriteLine("Curr: " + curr_pos + "  \tNext: " + next_pos);
+                            best_diffs[curr_pos, next_pos] = compareSides(curr_piece, next_piece);
+                        }
+                        
+                        next_pos++;
+                    }
+
+                    curr_pos++;
+                }
+               
+                break;
+            }
+
+
+            return images_pieces[0];
         }
 
     }
