@@ -2,6 +2,7 @@
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace SS_OpenCV
 {
@@ -730,17 +731,35 @@ namespace SS_OpenCV
                 best_diffs[i, best_piece2] = new SideValues(Int32.MaxValue, Double.MaxValue);
             }
             */
+            Console.WriteLine("Piece1: " + best_piece1);
+            Console.WriteLine("Piece2: " + best_piece2);
+            Console.WriteLine("Side: " + best_side);
             Image<Bgr, byte> piece1 = images_pieces[best_piece1];
-            images_pieces.RemoveAt(best_piece1);
             Image<Bgr, byte> piece2 = images_pieces[best_piece2];
-            images_pieces.RemoveAt(best_piece2);
+
+            images_pieces.Remove(piece1);
+            images_pieces.Remove(piece2);
 
             // Create new image
-
-
-            images_pieces.Add(piece1);
+            switch(best_side)
+            {
+                case 0:
+                    images_pieces.Add(CombineImageTopBottom(piece1, piece2));
+                    break;
+                case 1:
+                    images_pieces.Add(CombineImageRightLeftm(piece1, piece2));
+                    break;
+                case 2:
+                    images_pieces.Add(CombineImageBootomTop(piece1, piece2));
+                    break;
+                case 3:
+                    images_pieces.Add(CombineImageLeftRight(piece1, piece2));
+                    break;
+                default:
+                    Console.WriteLine("ERROR: Combining images");
+                    break;
+            }
         }
-
 
 
 
@@ -748,9 +767,181 @@ namespace SS_OpenCV
         {
             unsafe
             {
+                if(piece1.Width == piece2.Width)
+                {
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(0, piece2.Height, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+                    return new_image;
+                }
+                else if (piece1.Width > piece2.Width)
+                {
+                    // Scale img2
+                    piece2 = piece2.Resize(piece1.Width, piece2.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(0, piece2.Height, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+                    return new_image;
+                }
+                else
+                {
+                    // Scale img1
+                    piece1 = piece1.Resize(piece2.Width, piece1.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(0, piece2.Height, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+                    return new_image;
+                }
 
 
-                return new Image<Bgr, byte>(100,100);
+                
+            }
+        }
+
+        private Image<Bgr, byte> CombineImageRightLeftm(Image<Bgr, byte> piece1, Image<Bgr, byte> piece2)
+        {
+            unsafe
+            {
+                if (piece1.Height == piece2.Height)
+                {
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(piece1.Width, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+
+                    return new_image;
+                }
+                else if (piece1.Height > piece2.Height)
+                {
+                    // Scale img2
+                    piece2 = piece2.Resize(piece2.Width, piece1.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(piece1.Width, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+
+                    return new_image;
+                }
+                else
+                {
+                    // Scale img1
+                    piece1 = piece1.Resize(piece1.Width, piece2.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(piece1.Width, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+
+                    return new_image;
+                }
+            }
+        }
+
+        private Image<Bgr, byte> CombineImageBootomTop(Image<Bgr, byte> piece1, Image<Bgr, byte> piece2)
+        {
+            unsafe
+            {
+                if (piece1.Width == piece2.Width)
+                {
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(0, piece1.Height, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+
+                    return new_image;
+                }
+                else if (piece1.Width > piece2.Width)
+                {
+                    // Scale img2
+                    piece2 = piece2.Resize(piece1.Width, piece2.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(0, piece1.Height, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+                    return new_image;
+                }
+                else
+                {
+                    // Scale img1
+                    piece1 = piece1.Resize(piece2.Width, piece1.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(0, piece1.Height, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+                    return new_image;
+                }
+            }
+        }
+
+        private Image<Bgr, byte> CombineImageLeftRight(Image<Bgr, byte> piece1, Image<Bgr, byte> piece2)
+        {
+            unsafe
+            {
+                if (piece1.Height == piece2.Height)
+                {
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(piece2.Width, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+
+                    return new_image;
+                }
+                else if (piece1.Height > piece2.Height)
+                {
+                    // Scale img2
+                    piece2 = piece2.Resize(piece2.Width, piece1.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(piece2.Width, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+
+                    return new_image;
+                }
+                else
+                {
+                    // Scale img1
+                    piece1 = piece1.Resize(piece1.Width, piece2.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
+                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    piece2.CopyTo(new_image);
+                    new_image.ROI = new Rectangle(piece2.Width, 0, piece1.Width, piece1.Height);
+                    piece1.CopyTo(new_image);
+                    new_image.ROI = Rectangle.Empty;
+
+                    return new_image;
+                }
             }
         }
 
