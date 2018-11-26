@@ -259,7 +259,7 @@ namespace SS_OpenCV
                     //TODO fix borders
                 }
 
-                    return tmp;
+                return tmp;
             }
         }
 
@@ -355,7 +355,7 @@ namespace SS_OpenCV
             }
         }
 
-        private SideValues compareSides(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
+        private SideValues CompareSides(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
         {
             unsafe
             {
@@ -387,153 +387,33 @@ namespace SS_OpenCV
                 double scale;
 
                 // [START] 0 TOP->BOTTOM
-                Console.WriteLine("Comparing TOP img1 to BOTTOM img2");
+                //Console.WriteLine("Comparing TOP img1 to BOTTOM img2");
                 image2Pointer += step2 * (height2 - 1);
 
                 diff = 0;
                 scale = (width1 > width2) ? width1 / (double)width2 : width2 / (double)width1;
-                Console.WriteLine("Scale: " + scale);
+                //Console.WriteLine("Scale: " + scale);
                 if (width1 == width2)
                 {
-                    Console.WriteLine("Width img1 == Wigth img2");
+                    //Console.WriteLine("Width img1 == Wigth img2");
                     for (int y = 0; y < width1; y++)
                     {
                         diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
                         image1Pointer += nChan1;
                         image2Pointer += nChan2;
                     }
                 }
                 else if (width1 > width2)
                 {
-                    Console.WriteLine("Width img1 > Wigth img2");
-                    int pos = 1;
-                    for (int y = 0; y < width1; y++)
-                    {
-                        diff += ( Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2]) ) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-                        image1Pointer += nChan1;
-                        if(pos % scale == 0)
-                            image2Pointer +=  nChan2;
-                        pos++;
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Width img1 < Wigth img2");
-                    int pos = 1;
-                    for (int y = 0; y < width2; y++)
-                    {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2]) ) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-                        image2Pointer += nChan2;
-                        if (pos % scale == 0)
-                            image1Pointer += nChan1;
-                        pos++;
-                    }
-                }
-                Console.WriteLine("DIFF: " + diff);
-                if(diff < best_diff)
-                {
-                    best_diff = diff;
-                    best_side = 0; 
-                }
-                // [END] 0 TOP->BOTTOM
-
-                // [START] 1 RIGHT->LEFT
-                Console.WriteLine("Comparing RIGHT img1 to LEFT img2");
-                image1Pointer = pointerCopy1;
-                image1Pointer += nChan1 * (width1 - 1);
-
-                image2Pointer = pointerCopy2;
-
-                diff = 0;
-                scale = (height1 > height2) ? height1 / (double)height2 : height2 / (double)height1;
-                Console.WriteLine("Scale: " + scale);
-                if (height1 == height2)
-                {
-                    Console.WriteLine("Height img1 == Height img2");
-                    for (int x = 0; x < height1; x++)
-                    {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
-                        image1Pointer += step1;
-                        image2Pointer += step2;
-                    }
-                }
-                else if (height1 > height2)
-                {
-                    Console.WriteLine("Height img1 > Height img2");
-                    int pos = 1;
-                    for (int x = 0; x < height1; x++)
-                    {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-                        image1Pointer += step1;
-                        if (pos % scale == 0)
-                            image2Pointer += step2;
-                        pos++;
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Height img1 < Height img2");
-                    int pos = 1;
-                    for (int x = 0; x < height2; x++)
-                    {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-                        image2Pointer += step2;
-                        if (pos % scale == 0)
-                            image1Pointer += step1;
-                        pos++;
-                    }
-                }
-                Console.WriteLine("DIFF: " + diff);
-                if (diff < best_diff)
-                {
-                    best_diff = diff;
-                    best_side = 1;
-                }
-                // [END] 1 RIGHT->LEFT
-
-                // [START] 2 BOTTOM->TOP
-                Console.WriteLine("Comparing BOTTOM img1 to LEFT TOP");
-                image1Pointer = pointerCopy1;
-                image1Pointer += step1 * (height1 - 1);
-
-                image2Pointer = pointerCopy2;
-
-                diff = 0;
-                scale = (width1 > width2) ? width1 / (double)width2 : width2 / (double)width1;
-                Console.WriteLine("Scale: " + scale);
-                if (width1 == width2)
-                {
-                    Console.WriteLine("Width img1 == Height img2");
-                    for (int y = 0; y < width1; y++)
-                    {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
-                        image1Pointer += nChan1;
-                        image2Pointer += nChan2;
-                    }
-                }
-                else if (width1 > width2)
-                {
-                    Console.WriteLine("Width img1 > Height img2");
+                    //Console.WriteLine("Width img1 > Wigth img2");
                     int pos = 1;
                     for (int y = 0; y < width1; y++)
                     {
                         diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
                         image1Pointer += nChan1;
                         if (pos % scale == 0)
                             image2Pointer += nChan2;
@@ -542,58 +422,58 @@ namespace SS_OpenCV
                 }
                 else
                 {
-                    Console.WriteLine("Width img1 < Height img2");
+                    //Console.WriteLine("Width img1 < Wigth img2");
                     int pos = 1;
                     for (int y = 0; y < width2; y++)
                     {
                         diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
                         image2Pointer += nChan2;
                         if (pos % scale == 0)
                             image1Pointer += nChan1;
                         pos++;
                     }
                 }
-                Console.WriteLine("DIFF: " + diff);
+                //Console.WriteLine("DIFF: " + diff);
                 if (diff < best_diff)
                 {
                     best_diff = diff;
-                    best_side = 2;
+                    best_side = 0;
                 }
-                // [END] 2 BOTTOM->TOP
+                // [END] 0 TOP->BOTTOM
 
-                // [START] 3 LEFT->RIGHT
-                Console.WriteLine("Comparing LEFT img1 to RIGHT img2");
+                // [START] 1 RIGHT->LEFT
+                //Console.WriteLine("Comparing RIGHT img1 to LEFT img2");
                 image1Pointer = pointerCopy1;
+                image1Pointer += nChan1 * (width1 - 1);
 
                 image2Pointer = pointerCopy2;
-                image2Pointer += nChan2 * (width2 - 1);
 
                 diff = 0;
                 scale = (height1 > height2) ? height1 / (double)height2 : height2 / (double)height1;
-                Console.WriteLine("Scale: " + scale);
+                //Console.WriteLine("Scale: " + scale);
                 if (height1 == height2)
                 {
-                    Console.WriteLine("Height img1 == Height img2");
+                    //Console.WriteLine("Height img1 == Height img2");
                     for (int x = 0; x < height1; x++)
                     {
                         diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
                         image1Pointer += step1;
                         image2Pointer += step2;
                     }
                 }
                 else if (height1 > height2)
                 {
-                    Console.WriteLine("Height img1 > Height img2");
+                    //Console.WriteLine("Height img1 > Height img2");
                     int pos = 1;
                     for (int x = 0; x < height1; x++)
                     {
                         diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
                         image1Pointer += step1;
                         if (pos % scale == 0)
                             image2Pointer += step2;
@@ -602,20 +482,140 @@ namespace SS_OpenCV
                 }
                 else
                 {
-                    Console.WriteLine("Height img1 < Height img2");
+                    //Console.WriteLine("Height img1 < Height img2");
                     int pos = 1;
                     for (int x = 0; x < height2; x++)
                     {
                         diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
                         image2Pointer += step2;
                         if (pos % scale == 0)
                             image1Pointer += step1;
                         pos++;
                     }
                 }
-                Console.WriteLine("DIFF: " + diff);
+                //Console.WriteLine("DIFF: " + diff);
+                if (diff < best_diff)
+                {
+                    best_diff = diff;
+                    best_side = 1;
+                }
+                // [END] 1 RIGHT->LEFT
+
+                // [START] 2 BOTTOM->TOP
+                //Console.WriteLine("Comparing BOTTOM img1 to LEFT TOP");
+                image1Pointer = pointerCopy1;
+                image1Pointer += step1 * (height1 - 1);
+
+                image2Pointer = pointerCopy2;
+
+                diff = 0;
+                scale = (width1 > width2) ? width1 / (double)width2 : width2 / (double)width1;
+                //Console.WriteLine("Scale: " + scale);
+                if (width1 == width2)
+                {
+                    //Console.WriteLine("Width img1 == Height img2");
+                    for (int y = 0; y < width1; y++)
+                    {
+                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
+                        image1Pointer += nChan1;
+                        image2Pointer += nChan2;
+                    }
+                }
+                else if (width1 > width2)
+                {
+                    //Console.WriteLine("Width img1 > Height img2");
+                    int pos = 1;
+                    for (int y = 0; y < width1; y++)
+                    {
+                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
+                        image1Pointer += nChan1;
+                        if (pos % scale == 0)
+                            image2Pointer += nChan2;
+                        pos++;
+                    }
+                }
+                else
+                {
+                    //Console.WriteLine("Width img1 < Height img2");
+                    int pos = 1;
+                    for (int y = 0; y < width2; y++)
+                    {
+                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
+                        image2Pointer += nChan2;
+                        if (pos % scale == 0)
+                            image1Pointer += nChan1;
+                        pos++;
+                    }
+                }
+                //Console.WriteLine("DIFF: " + diff);
+                if (diff < best_diff)
+                {
+                    best_diff = diff;
+                    best_side = 2;
+                }
+                // [END] 2 BOTTOM->TOP
+
+                // [START] 3 LEFT->RIGHT
+                //Console.WriteLine("Comparing LEFT img1 to RIGHT img2");
+                image1Pointer = pointerCopy1;
+
+                image2Pointer = pointerCopy2;
+                image2Pointer += nChan2 * (width2 - 1);
+
+                diff = 0;
+                scale = (height1 > height2) ? height1 / (double)height2 : height2 / (double)height1;
+                //Console.WriteLine("Scale: " + scale);
+                if (height1 == height2)
+                {
+                    //Console.WriteLine("Height img1 == Height img2");
+                    for (int x = 0; x < height1; x++)
+                    {
+                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
+                        image1Pointer += step1;
+                        image2Pointer += step2;
+                    }
+                }
+                else if (height1 > height2)
+                {
+                    //Console.WriteLine("Height img1 > Height img2");
+                    int pos = 1;
+                    for (int x = 0; x < height1; x++)
+                    {
+                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
+                        image1Pointer += step1;
+                        if (pos % scale == 0)
+                            image2Pointer += step2;
+                        pos++;
+                    }
+                }
+                else
+                {
+                    //Console.WriteLine("Height img1 < Height img2");
+                    int pos = 1;
+                    for (int x = 0; x < height2; x++)
+                    {
+                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
+                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
+                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
+                        image2Pointer += step2;
+                        if (pos % scale == 0)
+                            image1Pointer += step1;
+                        pos++;
+                    }
+                }
+                //Console.WriteLine("DIFF: " + diff);
                 if (diff < best_diff)
                 {
                     best_diff = diff;
@@ -629,7 +629,7 @@ namespace SS_OpenCV
                 Console.WriteLine("Best side: " + best_side + ", diff: " + best_diff);
 
 
-                return new SideValues(best_side, best_diff); ;
+                return new SideValues(best_side, best_diff);
             }
         }
 
@@ -646,39 +646,117 @@ namespace SS_OpenCV
 
         public Image<Bgr, byte> getFinalImage()
         {
-            SideValues[,] best_diffs = new SideValues[images_pieces.Count, images_pieces.Count];
+            //TMP
+            SideValues[,] best_diffs;// = new SideValues[images_pieces.Count, images_pieces.Count];
 
             while (images_pieces.Count != 1)
             {
+                best_diffs = new SideValues[images_pieces.Count, images_pieces.Count];
                 int curr_pos = 0;
                 foreach (Image<Bgr, byte> curr_piece in images_pieces)
                 {
                     int next_pos = 0;
                     foreach (Image<Bgr, byte> next_piece in images_pieces)
                     {
-                        if(curr_pos == next_pos || curr_pos > next_pos)
+                        if (curr_pos >= next_pos)
                         {
                             //Be gone
                         }
 
                         else
                         {
-                            Console.WriteLine("Curr: " + curr_pos + "  \tNext: " + next_pos);
-                            best_diffs[curr_pos, next_pos] = compareSides(curr_piece, next_piece);
+                            Console.WriteLine("Best Side for: " + curr_pos + " vs: " + next_pos);
+                            best_diffs[curr_pos, next_pos] = CompareSides(curr_piece, next_piece);
                         }
-                        
+
                         next_pos++;
                     }
 
                     curr_pos++;
                 }
-               
-                break;
+
+                // Analize best diffs
+                CombineImages(best_diffs);
+
+                //break;
             }
 
 
             return images_pieces[0];
         }
 
+        private void CombineImages(SideValues[,] best_diffs)
+        {
+            int best_piece1 = 0, best_piece2 = 0, best_side = 0;
+            double best_diff = Double.MaxValue;
+            SideValues s_value;
+
+            for (int i = 0; i < images_pieces.Count; i++)
+            {
+                for (int j = 0; j < images_pieces.Count; j++)
+                {
+                    if (i >= j)
+                    {
+                        // Get lost
+                    } else {
+                        s_value = best_diffs[i, j];
+                        Console.WriteLine(s_value.value);
+                        Console.WriteLine(s_value.side);
+
+                        if(s_value.value < best_diff)
+                        {
+                            best_diff = s_value.value;
+                            best_piece1 = i;
+                            best_piece2 = j;
+                            best_side = s_value.side;
+                        }
+                    }
+
+ 
+                    
+                }
+            }
+
+            // TMP Clear 2 lines and colums
+            /*
+            for (int i = 0; i < images_pieces.Count; i++)
+            {
+                best_diffs[best_piece1, i] = new SideValues(Int32.MaxValue, Double.MaxValue);
+                best_diffs[best_piece2, i] = new SideValues(Int32.MaxValue, Double.MaxValue);
+            }
+            for (int i = 0; i < images_pieces.Count; i++)
+            {
+                best_diffs[i, best_piece1] = new SideValues(Int32.MaxValue, Double.MaxValue);
+                best_diffs[i, best_piece2] = new SideValues(Int32.MaxValue, Double.MaxValue);
+            }
+            */
+            Image<Bgr, byte> piece1 = images_pieces[best_piece1];
+            images_pieces.RemoveAt(best_piece1);
+            Image<Bgr, byte> piece2 = images_pieces[best_piece2];
+            images_pieces.RemoveAt(best_piece2);
+
+            // Create new image
+
+
+            images_pieces.Add(piece1);
+        }
+
+
+
+
+        private Image<Bgr, byte> CombineImageTopBottom(Image<Bgr, byte> piece1, Image<Bgr, byte> piece2)
+        {
+            unsafe
+            {
+
+
+                return new Image<Bgr, byte>(100,100);
+            }
+        }
+
     }
+
+   
+
+
 }
