@@ -15,6 +15,7 @@ namespace SS_OpenCV
         uint[,] labels;
         uint[] labels_index;
         int curr_label_index;
+        int back_b = -1, back_g = -1, back_r = -1;
 
         public Puzzle(Image<Bgr, byte> img)
         {
@@ -45,7 +46,9 @@ namespace SS_OpenCV
                 bool changed = true;
                 uint curr_label = 1;
 
-                int back_b = dataPtrOriginal[0], back_g = dataPtrOriginal[1], back_r = dataPtrOriginal[2];
+                back_b = dataPtrOriginal[0];
+                back_g = dataPtrOriginal[1];
+                back_r = dataPtrOriginal[2];
 
                 // First run
                 for (int y = 0; y < height; y++)
@@ -250,6 +253,17 @@ namespace SS_OpenCV
                         newImagePointer[1] = (dataPtrOriginal + (x2 * nChan) + (y2 * step))[1];
                         newImagePointer[2] = (dataPtrOriginal + (x2 * nChan) + (y2 * step))[2];
 
+
+                        // No longer a problem
+                        //int count = 1;
+                        //while (newImagePointer[0] == back_b && newImagePointer[1] == back_g && newImagePointer[1] == back_r)
+                        //{
+                        //    Console.WriteLine("BACK " + count);
+                        //    newImagePointer[0] = (dataPtrOriginal + ((x2 + count) * nChan) + (y2 * step))[0];
+                        //    newImagePointer[1] = (dataPtrOriginal + ((x2 + count) * nChan) + (y2 * step))[1];
+                        //    newImagePointer[2] = (dataPtrOriginal + ((x2 + count) * nChan) + (y2 * step))[2];
+                        //}
+
                         newImagePointer += nChan_new;
                     }
                     newImagePointer += padding_new;
@@ -363,6 +377,10 @@ namespace SS_OpenCV
                 // top = 0; right = 1; bottom = 2; left = 3;
                 int best_side = -1;
                 double best_diff = Double.MaxValue;
+                double factor_border = 1;
+                double factor_in_1 = 0.4; ;// 0.75;
+                double factor_in_2 = 0.2;// 0.50;
+                double factor_in_3 = 0.1;// 0.25;
 
                 // Image 1 data
                 MIplImage image1 = img1.MIplImage;
@@ -387,6 +405,8 @@ namespace SS_OpenCV
                 double diff;
                 double scale;
 
+                byte* tmp1, tmp2;
+
                 // [START] 0 TOP->BOTTOM
                 //Console.WriteLine("Comparing TOP img1 to BOTTOM img2");
                 image2Pointer += step2 * (height2 - 1);
@@ -399,14 +419,16 @@ namespace SS_OpenCV
                     //Console.WriteLine("Width img1 == Wigth img2");
                     for (int y = 0; y < width1; y++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-
-                        // Compare Inside 1 pixel
-                        image1Pointer += step1;
-                        image2Pointer -= step2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer -= step1;
-                        image2Pointer += step2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer + step1;
+                        tmp2 = image2Pointer - step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255 ) * factor_in_1;
+                        tmp1 += step1;
+                        tmp2 -= step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 += step1;
+                        tmp2 -= step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
                         //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
@@ -420,16 +442,16 @@ namespace SS_OpenCV
                     int pos = 1;
                     for (int y = 0; y < width1; y++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer += step1;
-                        image2Pointer -= step2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer -= step1;
-                        image2Pointer += step2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer + step1;
+                        tmp2 = image2Pointer - step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 += step1;
+                        tmp2 -= step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 += step1;
+                        tmp2 -= step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image1Pointer += nChan1;
                         if (pos % scale == 0)
@@ -443,16 +465,16 @@ namespace SS_OpenCV
                     int pos = 1;
                     for (int y = 0; y < width2; y++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer += step1;
-                        image2Pointer -= step2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer -= step1;
-                        image2Pointer += step2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer + step1;
+                        tmp2 = image2Pointer - step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 += step1;
+                        tmp2 -= step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 += step1;
+                        tmp2 -= step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image2Pointer += nChan2;
                         if (pos % scale == 0)
@@ -483,16 +505,16 @@ namespace SS_OpenCV
                     //Console.WriteLine("Height img1 == Height img2");
                     for (int x = 0; x < height1; x++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer -= nChan1;
-                        image2Pointer += nChan2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer += nChan1;
-                        image2Pointer -= nChan2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer - nChan1;
+                        tmp2 = image2Pointer + nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 -= nChan1;
+                        tmp2 += nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 -= nChan1;
+                        tmp2 += nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image1Pointer += step1;
                         image2Pointer += step2;
@@ -504,16 +526,16 @@ namespace SS_OpenCV
                     int pos = 1;
                     for (int x = 0; x < height1; x++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer -= nChan1;
-                        image2Pointer += nChan2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        image1Pointer += nChan1;
-                        image2Pointer -= nChan2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer - nChan1;
+                        tmp2 = image2Pointer + nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 -= nChan1;
+                        tmp2 += nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 -= nChan1;
+                        tmp2 += nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image1Pointer += step1;
                         if (pos % scale == 0)
@@ -527,16 +549,16 @@ namespace SS_OpenCV
                     int pos = 1;
                     for (int x = 0; x < height2; x++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer -= nChan1;
-                        image2Pointer += nChan2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer += nChan1;
-                        image2Pointer -= nChan2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer - nChan1;
+                        tmp2 = image2Pointer + nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 -= nChan1;
+                        tmp2 += nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 -= nChan1;
+                        tmp2 += nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image2Pointer += step2;
                         if (pos % scale == 0)
@@ -567,16 +589,16 @@ namespace SS_OpenCV
                     //Console.WriteLine("Width img1 == Height img2");
                     for (int y = 0; y < width1; y++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer -= step1;
-                        image2Pointer += step2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer += step1;
-                        image2Pointer -= step2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer - step1;
+                        tmp2 = image2Pointer + step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 -= step1;
+                        tmp2 += step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 -= step1;
+                        tmp2 += step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
 
                         image1Pointer += nChan1;
@@ -589,16 +611,16 @@ namespace SS_OpenCV
                     int pos = 1;
                     for (int y = 0; y < width1; y++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer -= step1;
-                        image2Pointer += step2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer += step1;
-                        image2Pointer -= step2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer - step1;
+                        tmp2 = image2Pointer + step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 -= step1;
+                        tmp2 += step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 -= step1;
+                        tmp2 += step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image1Pointer += nChan1;
                         if (pos % scale == 0)
@@ -612,16 +634,16 @@ namespace SS_OpenCV
                     int pos = 1;
                     for (int y = 0; y < width2; y++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer -= step1;
-                        image2Pointer += step2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer += step1;
-                        image2Pointer -= step2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer - step1;
+                        tmp2 = image2Pointer + step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 -= step1;
+                        tmp2 += step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 -= step1;
+                        tmp2 += step2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image2Pointer += nChan2;
                         if (pos % scale == 0)
@@ -652,16 +674,16 @@ namespace SS_OpenCV
                     //Console.WriteLine("Height img1 == Height img2");
                     for (int x = 0; x < height1; x++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer += nChan1;
-                        image2Pointer -= nChan2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer -= nChan1;
-                        image2Pointer += nChan2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer + nChan1;
+                        tmp2 = image2Pointer - nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 += nChan1;
+                        tmp2 -= nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 += nChan1;
+                        tmp2 -= nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image1Pointer += step1;
                         image2Pointer += step2;
@@ -673,16 +695,16 @@ namespace SS_OpenCV
                     int pos = 1;
                     for (int x = 0; x < height1; x++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer += nChan1;
-                        image2Pointer -= nChan2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer -= nChan1;
-                        image2Pointer += nChan2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer + nChan1;
+                        tmp2 = image2Pointer - nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 += nChan1;
+                        tmp2 -= nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 += nChan1;
+                        tmp2 -= nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image1Pointer += step1;
                         if (pos % scale == 0)
@@ -696,16 +718,16 @@ namespace SS_OpenCV
                     int pos = 1;
                     for (int x = 0; x < height2; x++)
                     {
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255;
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ", " + image1Pointer[1] + ", " + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ", " + image2Pointer[1] + ", " + image2Pointer[2]);
-
-                        // Compare Inside 1 pixel
-                        image1Pointer += nChan1;
-                        image2Pointer -= nChan2;
-                        diff += (Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255 / 1.5;
-                        image1Pointer -= nChan1;
-                        image2Pointer += nChan2;
+                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
+                        tmp1 = image1Pointer + nChan1;
+                        tmp2 = image2Pointer - nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
+                        tmp1 += nChan1;
+                        tmp2 -= nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
+                        tmp1 += nChan1;
+                        tmp2 -= nChan2;
+                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
 
                         image2Pointer += step2;
                         if (pos % scale == 0)
@@ -721,11 +743,9 @@ namespace SS_OpenCV
                 }
                 // [END] 3 LEFT->RIGHT
 
-                // TODO
-                // IF two sides have same diff ?
+                // TODO IF two sides have same diff ?
 
                 Console.WriteLine("Best side: " + best_side + ", diff: " + best_diff);
-
 
                 return new SideValues(best_side, best_diff);
             }
@@ -749,6 +769,7 @@ namespace SS_OpenCV
 
             while (images_pieces.Count != 1)
             {
+                
                 best_diffs = new SideValues[images_pieces.Count, images_pieces.Count];
                 int curr_pos = 0;
                 foreach (Image<Bgr, byte> curr_piece in images_pieces)
@@ -775,8 +796,6 @@ namespace SS_OpenCV
 
                 // Analize best diffs
                 CombineImages(best_diffs);
-
-                //break;
             }
 
 
@@ -786,7 +805,7 @@ namespace SS_OpenCV
         private void CombineImages(SideValues[,] best_diffs)
         {
             int best_piece1 = 0, best_piece2 = 0, best_side = 0;
-            double best_diff = Double.MaxValue;
+            double best_diff = double.MaxValue;
             SideValues s_value;
 
             for (int i = 0; i < images_pieces.Count; i++)
@@ -866,8 +885,10 @@ namespace SS_OpenCV
             {
                 if(piece1.Width == piece2.Width)
                 {
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece2.Width, piece2.Height)
+                    };
                     piece2.CopyTo(new_image);
                     new_image.ROI = new Rectangle(0, piece2.Height, piece1.Width, piece1.Height);
                     piece1.CopyTo(new_image);
@@ -879,8 +900,10 @@ namespace SS_OpenCV
                     // Scale img2
                     piece2 = piece2.Resize(piece1.Width, piece2.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece2.Width, piece2.Height)
+                    };
                     piece2.CopyTo(new_image);
                     new_image.ROI = new Rectangle(0, piece2.Height, piece1.Width, piece1.Height);
                     piece1.CopyTo(new_image);
@@ -892,8 +915,10 @@ namespace SS_OpenCV
                     // Scale img1
                     piece1 = piece1.Resize(piece2.Width, piece1.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece2.Width, piece2.Height)
+                    };
                     piece2.CopyTo(new_image);
                     new_image.ROI = new Rectangle(0, piece2.Height, piece1.Width, piece1.Height);
                     piece1.CopyTo(new_image);
@@ -912,8 +937,10 @@ namespace SS_OpenCV
             {
                 if (piece1.Height == piece2.Height)
                 {
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece1.Width, piece1.Height)
+                    };
                     piece1.CopyTo(new_image);
                     new_image.ROI = new Rectangle(piece1.Width, 0, piece2.Width, piece2.Height);
                     piece2.CopyTo(new_image);
@@ -926,8 +953,10 @@ namespace SS_OpenCV
                     // Scale img2
                     piece2 = piece2.Resize(piece2.Width, piece1.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece1.Width, piece1.Height)
+                    };
                     piece1.CopyTo(new_image);
                     new_image.ROI = new Rectangle(piece1.Width, 0, piece2.Width, piece2.Height);
                     piece2.CopyTo(new_image);
@@ -940,8 +969,10 @@ namespace SS_OpenCV
                     // Scale img1
                     piece1 = piece1.Resize(piece1.Width, piece2.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece1.Width, piece1.Height)
+                    };
                     piece1.CopyTo(new_image);
                     new_image.ROI = new Rectangle(piece1.Width, 0, piece2.Width, piece2.Height);
                     piece2.CopyTo(new_image);
@@ -958,8 +989,10 @@ namespace SS_OpenCV
             {
                 if (piece1.Width == piece2.Width)
                 {
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece1.Width, piece1.Height)
+                    };
                     piece1.CopyTo(new_image);
                     new_image.ROI = new Rectangle(0, piece1.Height, piece2.Width, piece2.Height);
                     piece2.CopyTo(new_image);
@@ -972,8 +1005,10 @@ namespace SS_OpenCV
                     // Scale img2
                     piece2 = piece2.Resize(piece1.Width, piece2.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece1.Width, piece1.Height)
+                    };
                     piece1.CopyTo(new_image);
                     new_image.ROI = new Rectangle(0, piece1.Height, piece2.Width, piece2.Height);
                     piece2.CopyTo(new_image);
@@ -985,8 +1020,10 @@ namespace SS_OpenCV
                     // Scale img1
                     piece1 = piece1.Resize(piece2.Width, piece1.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece1.Width, piece1.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece1.Width, piece1.Height)
+                    };
                     piece1.CopyTo(new_image);
                     new_image.ROI = new Rectangle(0, piece1.Height, piece2.Width, piece2.Height);
                     piece2.CopyTo(new_image);
@@ -1002,8 +1039,10 @@ namespace SS_OpenCV
             {
                 if (piece1.Height == piece2.Height)
                 {
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece2.Width, piece2.Height)
+                    };
                     piece2.CopyTo(new_image);
                     new_image.ROI = new Rectangle(piece2.Width, 0, piece1.Width, piece1.Height);
                     piece1.CopyTo(new_image);
@@ -1016,8 +1055,10 @@ namespace SS_OpenCV
                     // Scale img2
                     piece2 = piece2.Resize(piece2.Width, piece1.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece2.Width, piece2.Height)
+                    };
                     piece2.CopyTo(new_image);
                     new_image.ROI = new Rectangle(piece2.Width, 0, piece1.Width, piece1.Height);
                     piece1.CopyTo(new_image);
@@ -1030,8 +1071,10 @@ namespace SS_OpenCV
                     // Scale img1
                     piece1 = piece1.Resize(piece1.Width, piece2.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height);
-                    new_image.ROI = new Rectangle(0, 0, piece2.Width, piece2.Height);
+                    Image<Bgr, byte> new_image = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
+                    {
+                        ROI = new Rectangle(0, 0, piece2.Width, piece2.Height)
+                    };
                     piece2.CopyTo(new_image);
                     new_image.ROI = new Rectangle(piece2.Width, 0, piece1.Width, piece1.Height);
                     piece1.CopyTo(new_image);
