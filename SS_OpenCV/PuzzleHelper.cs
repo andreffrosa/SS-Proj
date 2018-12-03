@@ -94,9 +94,9 @@ namespace SS_OpenCV
                 return 0;
             }
 
-            var res1 = ((double)tmpB / 255.0 + maxLenght) / (double)maxLenght * 2;
-            var res2 = ((double)tmpG / 255.0 + maxLenght) / (double)maxLenght * 2;
-            var res3 = ((double)tmpR / 255.0 + maxLenght) / (double)maxLenght * 2;
+            var res1 = ((double)tmpB + maxLenght) / (double)maxLenght * 2;
+            var res2 = ((double)tmpG + maxLenght) / (double)maxLenght * 2;
+            var res3 = ((double)tmpR +maxLenght) / (double)maxLenght * 2;
 
             Console.WriteLine("WWWWWWWWWWWWWWWWWWWWWWW: " + (res1 + res2 + res3) / 3.0);
 
@@ -209,7 +209,9 @@ namespace SS_OpenCV
             if (piece1.Width > piece2.Width)
             {
                 // Scale img2
-                piece2 = piece2.Resize(piece1.Width, piece2.Height, INTER.CV_INTER_LINEAR);
+                double ratio = piece1.Width / (double) piece2.Width;
+
+                piece2 = piece2.Resize(piece1.Width, (int)Math.Round(piece2.Height * ratio), INTER.CV_INTER_LINEAR);
 
                 var newImage = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
                 {
@@ -224,7 +226,9 @@ namespace SS_OpenCV
             else
             {
                 // Scale img1
-                piece1 = piece1.Resize(piece2.Width, piece1.Height, INTER.CV_INTER_LINEAR);
+                double ratio =  piece2.Width / (double)piece1.Width;
+
+                piece1 = piece1.Resize(piece2.Width, (int)Math.Round(piece1.Height * ratio), INTER.CV_INTER_LINEAR);
 
                 var newImage = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
                 {
@@ -257,7 +261,9 @@ namespace SS_OpenCV
             if (piece1.Height > piece2.Height)
             {
                 // Scale img2
-                piece2 = piece2.Resize(piece2.Width, piece1.Height, INTER.CV_INTER_LINEAR);
+                double ratio = piece1.Height / (double)piece2.Height;
+
+                piece2 = piece2.Resize((int)Math.Round(piece2.Width * ratio), piece1.Height, INTER.CV_INTER_LINEAR);
 
                 var newImage = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
                 {
@@ -273,7 +279,9 @@ namespace SS_OpenCV
             else
             {
                 // Scale img1
-                piece1 = piece1.Resize(piece1.Width, piece2.Height, INTER.CV_INTER_LINEAR);
+                double ratio = piece2.Height / (double)piece1.Height;
+                
+                piece1 = piece1.Resize((int)Math.Round(piece1.Width * ratio), piece2.Height, INTER.CV_INTER_LINEAR);
 
                 var newImage = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
                 {
@@ -307,7 +315,9 @@ namespace SS_OpenCV
             if (piece1.Width > piece2.Width)
             {
                 // Scale img2
-                piece2 = piece2.Resize(piece1.Width, piece2.Height, INTER.CV_INTER_LINEAR);
+                double ratio = piece1.Width / (double)piece2.Width;
+
+                piece2 = piece2.Resize(piece1.Width, (int)Math.Round(piece2.Height * ratio), INTER.CV_INTER_LINEAR);
 
                 var newImage = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
                 {
@@ -322,7 +332,9 @@ namespace SS_OpenCV
             else
             {
                 // Scale img1
-                piece1 = piece1.Resize(piece2.Width, piece1.Height, INTER.CV_INTER_LINEAR);
+                double ratio = piece2.Width / (double)piece1.Width;
+
+                piece1 = piece1.Resize(piece2.Width, (int)Math.Round(piece1.Height * ratio), INTER.CV_INTER_LINEAR);
 
                 var newImage = new Image<Bgr, byte>(piece1.Width, piece1.Height + piece2.Height)
                 {
@@ -355,7 +367,9 @@ namespace SS_OpenCV
             if (piece1.Height > piece2.Height)
             {
                 // Scale img2
-                piece2 = piece2.Resize(piece2.Width, piece1.Height, INTER.CV_INTER_LINEAR);
+                double ratio = piece1.Height / (double)piece2.Height;
+
+                piece2 = piece2.Resize((int)Math.Round(piece2.Width * ratio), piece1.Height, INTER.CV_INTER_LINEAR);
 
                 var newImage = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
                 {
@@ -371,7 +385,9 @@ namespace SS_OpenCV
             else
             {
                 // Scale img1
-                piece1 = piece1.Resize(piece1.Width, piece2.Height, INTER.CV_INTER_LINEAR);
+                double ratio = piece2.Height / (double)piece1.Height;
+
+                piece1 = piece1.Resize((int)Math.Round(piece1.Width * ratio), piece2.Height, INTER.CV_INTER_LINEAR);
 
                 var newImage = new Image<Bgr, byte>(piece1.Width + piece2.Width, piece1.Height)
                 {
