@@ -19,28 +19,46 @@ namespace SS_OpenCV
             byte* copy1 = img1;
             byte* copy2 = img2;
 
-            const int thresholdDiff = 5;
+            const int thresholdDiffMin = 5;
+            const int thresholdDiffMax = 250;
+
+            var tmpR = 0;
+            var tmpG = 0;
+            var tmpB = 0;
 
             for (var y = 0; y < maxLenght; y++)
             {
                 for (var i = 0; i < 1; i++)
                 {
-                    var tmpPoints = 0;
+                   
 
-                    if(Math.Abs((img1 + in1 * i)[0] - (img2 + in2 * i)[0]) <= thresholdDiff)
+                    if(Math.Abs((img1 + in1 * i)[0] - (img2 + in2 * i)[0]) <= thresholdDiffMin)
                     {
-                        tmpPoints++;
+                        tmpB++;
                     }
-                    if (Math.Abs((img1 + in1 * i)[1] - (img2 + in2 * i)[1]) <= thresholdDiff)
+                    if (Math.Abs((img1 + in1 * i)[1] - (img2 + in2 * i)[1]) <= thresholdDiffMin)
                     {
-                        tmpPoints++;
+                        tmpG++;
                     }
-                    if (Math.Abs((img1 + in1 * i)[2] - (img2 + in2 * i)[2]) <= thresholdDiff)
+                    if (Math.Abs((img1 + in1 * i)[2] - (img2 + in2 * i)[2]) <= thresholdDiffMin)
                     {
-                        tmpPoints++;
+                        tmpR++;
                     }
 
-                    points += (double)tmpPoints / 3.0;
+                    if (Math.Abs((img1 + in1 * i)[0] - (img2 + in2 * i)[0]) >= thresholdDiffMax)
+                    {
+                        tmpB--;
+                    }
+                    if (Math.Abs((img1 + in1 * i)[1] - (img2 + in2 * i)[1]) >= thresholdDiffMax)
+                    {
+                        tmpG--;
+                    }
+                    if (Math.Abs((img1 + in1 * i)[2] - (img2 + in2 * i)[2]) >= thresholdDiffMax)
+                    {
+                        tmpR--;
+                    }
+
+                   
                     /*
                     diff += ((
                         Math.Abs((img1 + in1 * i)[0] - (img2 + in2 * i)[0]) 
@@ -69,8 +87,20 @@ namespace SS_OpenCV
             }
 
             // 1 -> Best
-            Console.WriteLine(points / maxLenght);
-            return (points / maxLenght);
+            //Console.WriteLine(points / maxLenght);
+
+            if(tmpB < 0 || tmpG < 0 || tmpR < 0)
+            {
+                return 0;
+            }
+
+            var res1 = ((double)tmpB / 255.0 + maxLenght) / (double)maxLenght * 2;
+            var res2 = ((double)tmpG / 255.0 + maxLenght) / (double)maxLenght * 2;
+            var res3 = ((double)tmpR / 255.0 + maxLenght) / (double)maxLenght * 2;
+
+            Console.WriteLine("WWWWWWWWWWWWWWWWWWWWWWW: " + (res1 + res2 + res3) / 3.0);
+
+            return (res1 + res2 + res3) / 3.0;
         }
         
         public static SideValues CompareSides(Image<Bgr, byte> img1, Image<Bgr, byte> img2)

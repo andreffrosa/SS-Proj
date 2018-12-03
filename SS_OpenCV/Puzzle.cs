@@ -296,7 +296,7 @@ namespace SS_OpenCV
                                 newImagePointer[1] = prevPixel[1];
                                 newImagePointer[2] = prevPixel[2];
                                 i++;
-                               // Console.WriteLine("III: " + i);
+                                Console.WriteLine("III: " + i);
                             }
                         }
                         else
