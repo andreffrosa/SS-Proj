@@ -290,14 +290,14 @@ namespace SS_OpenCV
                         int i = 1;
                         if(newImagePointer[0] == _backgroundB && newImagePointer[1] == _backgroundG && newImagePointer[2] == _backgroundR)
                         {
-                            if (prevPixel == null) Console.WriteLine("ERROR null prev pixel");
+                            if (prevPixel == null) ;//Console.WriteLine("ERROR null prev pixel");
                             else
                             {
                                 newImagePointer[0] = prevPixel[0];
                                 newImagePointer[1] = prevPixel[1];
                                 newImagePointer[2] = prevPixel[2];
                                 i++;
-                                Console.WriteLine("III: " + i);
+                                //Console.WriteLine("III: " + i);
                             }
                         }
                         else
@@ -313,7 +313,7 @@ namespace SS_OpenCV
                     newImagePointer += paddingNew;
                 }
 
-                newImage.Save("./imgs/piece" + partsID++ + ".png");
+               // newImage.Save("./imgs/piece" + partsID++ + ".png");
 
                 return newImage;
             }
@@ -352,9 +352,9 @@ namespace SS_OpenCV
                         xTopLeft[index] = x;
                         yTopLeft[index] = y;
 
-                        Console.WriteLine("Label: " + _labels[x, y]);
-                        Console.WriteLine("Top Left X: " + x);
-                        Console.WriteLine("Top Left Y: " + y);
+                        //Console.WriteLine("Label: " + _labels[x, y]);
+                        //Console.WriteLine("Top Left X: " + x);
+                        //Console.WriteLine("Top Left Y: " + y);
 
                     }
                     else if (_labels[x, y + 1] == BASE_VALUE && _labels[x + 1, y] == BASE_VALUE && _labels[x + 1, y - 2] == BASE_VALUE)
@@ -365,9 +365,9 @@ namespace SS_OpenCV
                         xBottomRight[index] = x;
                         yBottomRight[index] = y;
 
-                        Console.WriteLine("Label: " + _labels[x, y]);
-                        Console.WriteLine("Bottom Right X: " + x);
-                        Console.WriteLine("Bottom Right Y: " + y);
+                        //Console.WriteLine("Label: " + _labels[x, y]);
+                        //Console.WriteLine("Bottom Right X: " + x);
+                        //Console.WriteLine("Bottom Right Y: " + y);
                     }
                     else if (_labels[x, y - 1] == BASE_VALUE && _labels[x + 1, y] == BASE_VALUE && _labels[x - 2, y - 1] == BASE_VALUE)
                     {
@@ -377,9 +377,9 @@ namespace SS_OpenCV
                         xHelper[index] = x;
                         yHelper[index] = y;
 
-                        Console.WriteLine("Label: " + _labels[x, y]);
-                        Console.WriteLine("Top Right X: " + x);
-                        Console.WriteLine("Top Right Y: " + y);
+                        //Console.WriteLine("Label: " + _labels[x, y]);
+                        //Console.WriteLine("Top Right X: " + x);
+                        //Console.WriteLine("Top Right Y: " + y);
                     }
                 }
             }
@@ -408,7 +408,7 @@ namespace SS_OpenCV
                     double adjacent = xHelper[i] - xTopLeft[i];
                     
                     rads = Math.Tanh(opposite / adjacent);
-                    Console.WriteLine("Angle:\t" + RadsToDegrees(rads));
+                    //Console.WriteLine("Angle:\t" + RadsToDegrees(rads));
                     
                     Pieces_angle.Add(RadsToDegrees(rads));
                 }
@@ -481,15 +481,14 @@ namespace SS_OpenCV
 
             int bestSide = bestDiffs[bestPiece1, bestPiece2].Side;
 
-            /*Console.WriteLine("Piece1:\t" + bestPiece1);
-            Console.WriteLine("Piece2:\t" + bestPiece2);
-            Console.WriteLine("Side:\t" + bestSide);*/
+            /*//Console.WriteLine("Piece1:\t" + bestPiece1);
+            //Console.WriteLine("Piece2:\t" + bestPiece2);
+            //Console.WriteLine("Side:\t" + bestSide);*/
             
             var piece1 = _imagesPieces[bestPiece1];
             var piece2 = _imagesPieces[bestPiece2];
 
-            Debug.Assert(bestPiece1 < bestPiece2, "Failed 1");
-            Debug.Assert(bestPiece1 != bestPiece2, "Failed 2");
+
 
             // Combine Pieces
             Image<Bgr, byte> newPiece;
@@ -509,12 +508,12 @@ namespace SS_OpenCV
                     newPiece = PuzzleHelper.CombinePiecesLeftRight(piece1, piece2);
                     break;
                 default:
-                    Console.WriteLine("ERROR: Combining pieces");
+                    ////Console.WriteLine("ERROR: Combining pieces");
                     newPiece = new Image<Bgr, byte>(0,0);
                     break;
             }
 
-            newPiece.Save("./imgs/part" + pieceID++ + ".png");
+           // newPiece.Save("./imgs/part" + pieceID++ + ".png");
 
             return newPiece;
         }
@@ -535,7 +534,7 @@ namespace SS_OpenCV
                 {
                     if (currPos > nextPos)
                     {
-                        // Console.WriteLine("Best Side: " + currPos + " vs: " + nextPos);
+                        // ////Console.WriteLine("Best Side: " + currPos + " vs: " + nextPos);
 
                         bestDiffs[currPos, nextPos] = PuzzleHelper.CompareSides(currPiece, nextPiece);
 
@@ -564,29 +563,29 @@ namespace SS_OpenCV
 
                 _imagesPieces.Add(newPiece);
 
-                Console.WriteLine("MATRIX BEFORE//////////////////////////");
+                ////Console.WriteLine("MATRIX BEFORE//////////////////////////");
                 for (int i = 0; i < bestDiffs.GetLength(0); i++)
                 {
                     for (int j = 0; j < bestDiffs.GetLength(1); j++)
                     {
-                        Console.Write(bestDiffs[i, j].Points + "\t");
+                        ////Console.Write(bestDiffs[i, j].Points + "\t");
                     }
-                    Console.WriteLine("");
+                    //Console.WriteLine("");
                 }
-                Console.WriteLine("END //////////////////////////");
+                //Console.WriteLine("END //////////////////////////");
 
                 bestDiffs = CopyMatrix(bestDiffs, bestI, bestJ);
 
-                Console.WriteLine("MATRIX //////////////////////////");
+                //Console.WriteLine("MATRIX //////////////////////////");
                 for(int i = 0; i < bestDiffs.GetLength(0); i++)
                 {
                     for(int j = 0; j < bestDiffs.GetLength(1); j++)
                     {
-                        Console.Write(bestDiffs[i, j].Points + "\t");
+                        //Console.Write(bestDiffs[i, j].Points + "\t");
                     }
-                    Console.WriteLine("");
+                    //Console.WriteLine("");
                 }
-                Console.WriteLine("END //////////////////////////");
+                //Console.WriteLine("END //////////////////////////");
 
                 int[] res = FindBestStoredValueIndexes(bestDiffs);
 

@@ -137,7 +137,7 @@ namespace SS_OpenCV
                 image1Pointer = pointerCopy1;
                 image2Pointer = pointerCopy2 + step2 * (height2 - 1);
                 points = CompareSide(width1, width2, image1Pointer, image2Pointer, nChan1, nChan2, step1, -step2);
-                Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 0);
+                // Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 0);
 
                 if (points > topPoints)
                 {
@@ -150,7 +150,7 @@ namespace SS_OpenCV
                 image1Pointer = pointerCopy1 + nChan1 * (width1 - 1);
                 image2Pointer = pointerCopy2;
                 points = CompareSide(height1, height2, image1Pointer, image2Pointer, step1, step2, -nChan1, nChan2);
-                Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 1);
+                //Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 1);
 
                 if (points > topPoints)
                 {
@@ -163,7 +163,7 @@ namespace SS_OpenCV
                 image1Pointer = pointerCopy1 + step1 * (height1 - 1);
                 image2Pointer = pointerCopy2;
                 points = CompareSide(width1, width2, image1Pointer, image2Pointer, nChan1, nChan2, -step1, step2);
-                Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 2);
+                //Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 2);
 
                 if (points > topPoints)
                 {
@@ -176,7 +176,7 @@ namespace SS_OpenCV
                 image1Pointer = pointerCopy1;
                 image2Pointer = pointerCopy2 + nChan2 * (width2 - 1);
                 points = CompareSide(height1, height2, image1Pointer, image2Pointer, step1, step2, nChan1, -nChan2);
-                Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 3);
+                //Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 3);
 
                 if (points > topPoints)
                 {
@@ -185,7 +185,7 @@ namespace SS_OpenCV
                 }
                 // [END] 3 LEFT->RIGHT
 
-                Console.WriteLine("Best Diff: " + points + "\tBest Side: " + bestSide);
+                //Console.WriteLine("Best Diff: " + points + "\tBest Side: " + bestSide);
 
                 return new SideValues(bestSide, topPoints);
             }

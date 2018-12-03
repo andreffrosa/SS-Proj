@@ -178,11 +178,6 @@ public static class PuzzleClassic
                     }
                     dataPtr += 2 * nChan + padding;
                 }
-
-                foreach(KeyValuePair<uint, uint> e in equivalence_table)
-            {
-                Console.WriteLine(e.Key + " -> " + e.Value);
-            }
                 
 
                 if (equivalence_table.Count > 0)
