@@ -12,21 +12,40 @@ namespace SS_OpenCV
 
         private static unsafe double CompareSide(int lenght1, int lenght2, byte* img1, byte* img2, int inc1, int inc2, int in1, int in2)
         {
-            double diff = 0;
+            double points = 0;
             double scale = (lenght1 > lenght2) ? lenght1 / (double) lenght2 : lenght2 / (double) lenght1;
             double maxLenght = lenght1 > lenght2 ? lenght1 : lenght2;
 
             byte* copy1 = img1;
             byte* copy2 = img2;
 
+            const int thresholdDiff = 5;
+
             for (var y = 0; y < maxLenght; y++)
             {
                 for (var i = 0; i < 1; i++)
                 {
+                    var tmpPoints = 0;
+
+                    if(Math.Abs((img1 + in1 * i)[0] - (img2 + in2 * i)[0]) <= thresholdDiff)
+                    {
+                        tmpPoints++;
+                    }
+                    if (Math.Abs((img1 + in1 * i)[1] - (img2 + in2 * i)[1]) <= thresholdDiff)
+                    {
+                        tmpPoints++;
+                    }
+                    if (Math.Abs((img1 + in1 * i)[2] - (img2 + in2 * i)[2]) <= thresholdDiff)
+                    {
+                        tmpPoints++;
+                    }
+
+                    points += (double)tmpPoints / 3.0;
+                    /*
                     diff += ((
                         Math.Abs((img1 + in1 * i)[0] - (img2 + in2 * i)[0]) 
                         + Math.Abs((img1 + in1 * i)[1] - (img2 + in2 * i)[1]) 
-                        + Math.Abs((img1 + in1 * i)[2] - (img2 + in2 * i)[2])) / 3.0 / 255.0 / ((i+1)));
+                        + Math.Abs((img1 + in1 * i)[2] - (img2 + in2 * i)[2])) / 3.0 / 255.0 / ((i+1)));*/
                 }
 
                 if(lenght1 > lenght2)
@@ -49,7 +68,9 @@ namespace SS_OpenCV
                 //Debug.Assert(y < lenght2, "Failed 2");
             }
 
-            return diff;
+            // 1 -> Best
+            Console.WriteLine(points / maxLenght);
+            return (points / maxLenght);
         }
         
         public static SideValues CompareSides(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
@@ -58,7 +79,7 @@ namespace SS_OpenCV
             {
                 // top = 0; right = 1; bottom = 2; left = 3;
                 var bestSide = -1;
-                var bestDiff = double.MaxValue;
+                var topPoints = 0.0;
 
                 // Image 1 data
                 var image1 = img1.MIplImage;
@@ -80,17 +101,17 @@ namespace SS_OpenCV
                 var width2 = img2.Width;
                 var height2 = img2.Height;
 
-                double diff = 0;
+                double points = 0;
 
                 // [START] 0 TOP->BOTTOM
                 image1Pointer = pointerCopy1;
                 image2Pointer = pointerCopy2 + step2 * (height2 - 1);
-                diff = CompareSide(width1, width2, image1Pointer, image2Pointer, nChan1, nChan2, step1, -step2);
-                Console.WriteLine("New Diff: " + diff + "\tOld Diff: " + bestDiff + "\tSide: " + 0);
+                points = CompareSide(width1, width2, image1Pointer, image2Pointer, nChan1, nChan2, step1, -step2);
+                Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 0);
 
-                if (diff < bestDiff)
+                if (points > topPoints)
                 {
-                    bestDiff = diff;
+                    topPoints = points;
                     bestSide = 0;
                 }
                 // [END] 0 TOP->BOTTOM
@@ -98,12 +119,12 @@ namespace SS_OpenCV
                 // [START] 1 RIGHT->LEFT
                 image1Pointer = pointerCopy1 + nChan1 * (width1 - 1);
                 image2Pointer = pointerCopy2;
-                diff = CompareSide(height1, height2, image1Pointer, image2Pointer, step1, step2, -nChan1, nChan2);
-                Console.WriteLine("New Diff: " + diff + "\tOld Diff: " + bestDiff + "\tSide: " + 1);
+                points = CompareSide(height1, height2, image1Pointer, image2Pointer, step1, step2, -nChan1, nChan2);
+                Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 1);
 
-                if (diff < bestDiff)
+                if (points > topPoints)
                 {
-                    bestDiff = diff;
+                    topPoints = points;
                     bestSide = 1;
                 }
                 // [END] 1 RIGHT->LEFT
@@ -111,12 +132,12 @@ namespace SS_OpenCV
                 // [START] 2 BOTTOM->TOP
                 image1Pointer = pointerCopy1 + step1 * (height1 - 1);
                 image2Pointer = pointerCopy2;
-                diff = CompareSide(width1, width2, image1Pointer, image2Pointer, nChan1, nChan2, -step1, step2);
-                Console.WriteLine("New Diff: " + diff + "\tOld Diff: " + bestDiff + "\tSide: " + 2);
+                points = CompareSide(width1, width2, image1Pointer, image2Pointer, nChan1, nChan2, -step1, step2);
+                Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 2);
 
-                if (diff < bestDiff)
+                if (points > topPoints)
                 {
-                    bestDiff = diff;
+                    topPoints = points;
                     bestSide = 2;
                 }
                 // [END] 2 BOTTOM->TOP
@@ -124,19 +145,19 @@ namespace SS_OpenCV
                 // [START] 3 LEFT->RIGHT
                 image1Pointer = pointerCopy1;
                 image2Pointer = pointerCopy2 + nChan2 * (width2 - 1);
-                diff = CompareSide(height1, height2, image1Pointer, image2Pointer, step1, step2, nChan1, -nChan2);
-                Console.WriteLine("New Diff: " + diff + "\tOld Diff: " + bestDiff + "\tSide: " + 3);
+                points = CompareSide(height1, height2, image1Pointer, image2Pointer, step1, step2, nChan1, -nChan2);
+                Console.WriteLine("New Diff: " + points + "\tOld Diff: " + topPoints + "\tSide: " + 3);
 
-                if (diff < bestDiff)
+                if (points > topPoints)
                 {
-                    bestDiff = diff;
+                    topPoints = points;
                     bestSide = 3;
                 }
                 // [END] 3 LEFT->RIGHT
 
-                Console.WriteLine("Best Diff: " + diff + "\tBest Side: " + bestSide);
+                Console.WriteLine("Best Diff: " + points + "\tBest Side: " + bestSide);
 
-                return new SideValues(bestSide, bestDiff);
+                return new SideValues(bestSide, topPoints);
             }
         }
         

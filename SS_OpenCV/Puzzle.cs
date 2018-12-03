@@ -9,12 +9,12 @@ namespace SS_OpenCV
     public struct SideValues
     {
         public readonly int Side;
-        public readonly double Diff;
+        public readonly double Points;
             
         public SideValues(int side, double diff)
         {
             Side = side;
-            Diff = diff;
+            Points = diff;
         }
     }
     
@@ -250,7 +250,7 @@ namespace SS_OpenCV
                 var xP = piece[0];
                 var yP = piece[1];
 
-                var prevPixel = dataPtrOriginal;
+                byte*  prevPixel = null;
 
                 for (var y = 0; y < rows; y++)
                 {
@@ -277,14 +277,19 @@ namespace SS_OpenCV
                         int i = 1;
                         if(newImagePointer[0] == _backgroundB && newImagePointer[1] == _backgroundG && newImagePointer[2] == _backgroundR)
                         {
+                            if (prevPixel == null) Console.WriteLine("ERROR null prev pixel");
                             newImagePointer[0] = prevPixel[0];
                             newImagePointer[1] = prevPixel[1];
                             newImagePointer[2] = prevPixel[2];
                             i++;
                             Console.WriteLine("III: " + i);
                         }
+                        else
+                        {
+                            prevPixel = (dataPtrOriginal + x2 * nChan + y2 * step);
+                        }
 
-                        prevPixel = (dataPtrOriginal + x2 * nChan + y2 * step);
+                        
 
                         newImagePointer += nChanNew;
                     }
@@ -401,7 +406,7 @@ namespace SS_OpenCV
             var bestPiece1 = 0;
             var bestPiece2 = 0;
             var bestSide = 0;
-            var bestDiff = double.MaxValue;
+            var topPoints = 0.0;
 
             for (var i = 0; i < _imagesPieces.Count; i++)
             {
@@ -412,9 +417,9 @@ namespace SS_OpenCV
                     
                     var sValue = bestDiffs[i, j];
                     
-                    if (sValue.Diff >= bestDiff) continue;
+                    if (sValue.Points <= topPoints) continue;
                         
-                    bestDiff = sValue.Diff;
+                    topPoints = sValue.Points;
                     bestPiece1 = i;
                     bestPiece2 = j;
                     bestSide = sValue.Side;
