@@ -98,7 +98,7 @@ namespace SS_OpenCV
             var res2 = ((double)tmpG + maxLenght) / (double)maxLenght * 2;
             var res3 = ((double)tmpR +maxLenght) / (double)maxLenght * 2;
 
-            Console.WriteLine("WWWWWWWWWWWWWWWWWWWWWWW: " + (res1 + res2 + res3) / 3.0);
+            // Console.WriteLine("WWWWWWWWWWWWWWWWWWWWWWW: " + (res1 + res2 + res3) / 3.0);
 
             return (res1 + res2 + res3) / 3.0;
         }
