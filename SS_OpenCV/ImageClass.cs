@@ -2289,9 +2289,9 @@ namespace SS_OpenCV
 
         public static Image<Bgr, byte> puzzle(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, out List<int[]> Pieces_positions, out List<int> Pieces_angle, int level)
         {
-            Puzzle PuzzleOgj = new Puzzle(img);
-            PuzzleOgj.getPiecesPosition(out Pieces_positions, out Pieces_angle);
-            Image<Bgr, byte> FinalImage = PuzzleOgj.getFinalImage();
+            var puzzle = new Puzzle(img);
+            puzzle.GetPiecesPosition(out Pieces_positions, out Pieces_angle);
+            var finalImage = puzzle.GetFinalImage();
 
             /*
             Console.WriteLine("--------Image START--------");
@@ -2306,7 +2306,7 @@ namespace SS_OpenCV
             Console.WriteLine("--------Image END---------");
             */
 
-            return FinalImage;
+            return finalImage;
         }
 
         public static void Rotation_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float angle)

@@ -2,33 +2,60 @@
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace SS_OpenCV
 {
+    
+    public struct SideValues
+    {
+        public readonly int Side;
+        public readonly double Diff;
+            
+        public SideValues(int side, double diff)
+        {
+            Side = side;
+            Diff = diff;
+        }
+    }
+    
     internal class Puzzle
     {
         private const int MaxNumberPieces = 10;
         private const double RadToDegreeFactor = 180.0 / Math.PI;
+        
         private readonly Image<Bgr, byte> _originalImage;
-        List<Image<Bgr, byte>> images_pieces;
-        uint[,] labels;
-        uint[] labels_index;
-        int curr_label_index;
-        int back_b = -1, back_g = -1, back_r = -1;
+        private readonly List<Image<Bgr, byte>> _imagesPieces;
+        
+        private readonly uint[,] _labels;
+        private readonly uint[] _labelsIndex;
+        private int _currLabelIndex;
+
+        // TODO for testing
+        private int pieceID;
+        private int partsID;
+        
+        private int _backgroundB = -1, _backgroundG = -1, _backgroundR = -1;
 
         public Puzzle(Image<Bgr, byte> img)
         {
             _originalImage = img;
-            labels = new uint[img.Width, img.Height];
-            labels_index = new uint[MaxNumberPieces];
-            curr_label_index = 0;
-            images_pieces = new List<Image<Bgr, byte>>();
+            _labels = new uint[img.Width, img.Height];
+            _labelsIndex = new uint[MaxNumberPieces];
+            _currLabelIndex = 0;
+            _imagesPieces = new List<Image<Bgr, byte>>();
 
-            this.getLabels();
+            pieceID = 0;
+            partsID = 0;
+
+            GetLabels();
         }
 
-        private uint[,] getLabels()
+        private static int RadsToDegrees(double rads)
+        {
+            return (int)Math.Round(rads * RadToDegreeFactor);
+        }
+
+        private void GetLabels()
         {
             unsafe
             {
@@ -46,22 +73,22 @@ namespace SS_OpenCV
                 bool changed = true;
                 uint curr_label = 1;
 
-                back_b = dataPtrOriginal[0];
-                back_g = dataPtrOriginal[1];
-                back_r = dataPtrOriginal[2];
+                _backgroundB = dataPtrOriginal[0];
+                _backgroundG = dataPtrOriginal[1];
+                _backgroundR = dataPtrOriginal[2];
 
                 // First run
                 for (int y = 0; y < height; y++)
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        if (back_b != dataPtrOriginal[0] || back_g != dataPtrOriginal[1] || back_r != dataPtrOriginal[2])
+                        if (_backgroundB != dataPtrOriginal[0] || _backgroundG != dataPtrOriginal[1] || _backgroundR != dataPtrOriginal[2])
                         {
-                            labels[x, y] = curr_label++;
+                            _labels[x, y] = curr_label++;
                         }
                         else
                         {
-                            labels[x, y] = UInt32.MaxValue;
+                            _labels[x, y] = UInt32.MaxValue;
                         }
                         dataPtrOriginal += nChan;
                     }
@@ -81,42 +108,42 @@ namespace SS_OpenCV
 
                         for (int x = 1; x < width - 1; x++)
                         {
-                            uint tmp = labels[x, y];
-                            if (labels[x, y] != UInt32.MaxValue)
+                            uint tmp = _labels[x, y];
+                            if (_labels[x, y] != UInt32.MaxValue)
                             {
-                                if (labels[x, y] > labels[x - 1, y - 1])
+                                if (_labels[x, y] > _labels[x - 1, y - 1])
                                 {
-                                    labels[x, y] = labels[x - 1, y - 1];
+                                    _labels[x, y] = _labels[x - 1, y - 1];
                                 }
-                                if (labels[x, y] > labels[x, y - 1])
+                                if (_labels[x, y] > _labels[x, y - 1])
                                 {
-                                    labels[x, y] = labels[x, y - 1];
+                                    _labels[x, y] = _labels[x, y - 1];
                                 }
-                                if (labels[x, y] > labels[x - 1, y])
+                                if (_labels[x, y] > _labels[x - 1, y])
                                 {
-                                    labels[x, y] = labels[x - 1, y];
+                                    _labels[x, y] = _labels[x - 1, y];
                                 }
-                                if (labels[x, y] > labels[x + 1, y - 1])
+                                if (_labels[x, y] > _labels[x + 1, y - 1])
                                 {
-                                    labels[x, y] = labels[x + 1, y - 1];
+                                    _labels[x, y] = _labels[x + 1, y - 1];
                                 }
-                                if (labels[x, y] > labels[x - 1, y + 1])
+                                if (_labels[x, y] > _labels[x - 1, y + 1])
                                 {
-                                    labels[x, y] = labels[x - 1, y + 1];
+                                    _labels[x, y] = _labels[x - 1, y + 1];
                                 }
-                                if (labels[x, y] > labels[x + 1, y])
+                                if (_labels[x, y] > _labels[x + 1, y])
                                 {
-                                    labels[x, y] = labels[x + 1, y];
+                                    _labels[x, y] = _labels[x + 1, y];
                                 }
-                                if (labels[x, y] > labels[x, y + 1])
+                                if (_labels[x, y] > _labels[x, y + 1])
                                 {
-                                    labels[x, y] = labels[x, y + 1];
+                                    _labels[x, y] = _labels[x, y + 1];
                                 }
-                                if (labels[x, y] > labels[x + 1, y + 1])
+                                if (_labels[x, y] > _labels[x + 1, y + 1])
                                 {
-                                    labels[x, y] = labels[x + 1, y + 1];
+                                    _labels[x, y] = _labels[x + 1, y + 1];
                                 }
-                                if (tmp != labels[x, y])
+                                if (tmp != _labels[x, y])
                                     changed = true;
                             }
                             dataPtrOriginal += nChan;
@@ -132,42 +159,42 @@ namespace SS_OpenCV
                         for (int x = width - 2; x > 0; x--)
                         {
 
-                            uint tmp = labels[x, y];
-                            if (labels[x, y] != UInt32.MaxValue)
+                            uint tmp = _labels[x, y];
+                            if (_labels[x, y] != UInt32.MaxValue)
                             {
-                                if (labels[x, y] > labels[x - 1, y - 1])
+                                if (_labels[x, y] > _labels[x - 1, y - 1])
                                 {
-                                    labels[x, y] = labels[x - 1, y - 1];
+                                    _labels[x, y] = _labels[x - 1, y - 1];
                                 }
-                                if (labels[x, y] > labels[x, y - 1])
+                                if (_labels[x, y] > _labels[x, y - 1])
                                 {
-                                    labels[x, y] = labels[x, y - 1];
+                                    _labels[x, y] = _labels[x, y - 1];
                                 }
-                                if (labels[x, y] > labels[x - 1, y])
+                                if (_labels[x, y] > _labels[x - 1, y])
                                 {
-                                    labels[x, y] = labels[x - 1, y];
+                                    _labels[x, y] = _labels[x - 1, y];
                                 }
-                                if (labels[x, y] > labels[x + 1, y - 1])
+                                if (_labels[x, y] > _labels[x + 1, y - 1])
                                 {
-                                    labels[x, y] = labels[x + 1, y - 1];
+                                    _labels[x, y] = _labels[x + 1, y - 1];
                                 }
-                                if (labels[x, y] > labels[x - 1, y + 1])
+                                if (_labels[x, y] > _labels[x - 1, y + 1])
                                 {
-                                    labels[x, y] = labels[x - 1, y + 1];
+                                    _labels[x, y] = _labels[x - 1, y + 1];
                                 }
-                                if (labels[x, y] > labels[x + 1, y])
+                                if (_labels[x, y] > _labels[x + 1, y])
                                 {
-                                    labels[x, y] = labels[x + 1, y];
+                                    _labels[x, y] = _labels[x + 1, y];
                                 }
-                                if (labels[x, y] > labels[x, y + 1])
+                                if (_labels[x, y] > _labels[x, y + 1])
                                 {
-                                    labels[x, y] = labels[x, y + 1];
+                                    _labels[x, y] = _labels[x, y + 1];
                                 }
-                                if (labels[x, y] > labels[x + 1, y + 1])
+                                if (_labels[x, y] > _labels[x + 1, y + 1])
                                 {
-                                    labels[x, y] = labels[x + 1, y + 1];
+                                    _labels[x, y] = _labels[x + 1, y + 1];
                                 }
-                                if (tmp != labels[x, y])
+                                if (tmp != _labels[x, y])
                                     changed = true;
 
                             }
@@ -176,181 +203,178 @@ namespace SS_OpenCV
                         dataPtrOriginal -= nChan * 2 + padding;
                     }
                 }
-                return labels;
             }
 
         }
 
-        private int getLabelIndex(uint label)
+        private int GetLabelIndex(uint label)
         {
-            int index = Array.IndexOf(this.labels_index, label);
-            if (index == -1)
-            {
-                labels_index[this.curr_label_index] = label;
-                index = this.curr_label_index++;
-            }
+            var index = Array.IndexOf(_labelsIndex, label);
+            
+            if (index != -1) return index;
+            
+            _labelsIndex[_currLabelIndex] = label;
+            index = _currLabelIndex++;
+            
             return index;
         }
 
-        private int RadsToDegrees(double rads)
-        {
-            return (int)Math.Round(rads * RadToDegreeFactor);
-        }
-
-        private unsafe Image<Bgr, byte> GetImagesPieces(int[] piece, double angle, int helper_x, int helper_y)
+        private unsafe Image<Bgr, byte> GetImagesPieces(int[] piece, double angle, int helperX, int helperY)
         {
             unsafe
             {
-                MIplImage original = this._originalImage.MIplImage;
-                byte* dataPtrOriginal = (byte*)original.imageData.ToPointer();
-                int nChan = original.nChannels;
-                int padding = original.widthStep - original.nChannels * original.width;
-                int step = original.widthStep;
-                int width = this._originalImage.Width;
-                int height = this._originalImage.Height;
+                var original = _originalImage.MIplImage;
+                var dataPtrOriginal = (byte*)original.imageData.ToPointer();
+                var nChan = original.nChannels;
+                var step = original.widthStep;
 
-                int cols = 0;
-                int rows = 0;
-                if (angle != 0.0)
-                {
-                    cols = (int)Math.Round(Math.Sqrt(Math.Pow(helper_x - piece[0], 2) + Math.Pow(piece[1] - helper_y, 2))) + 1;
-                    rows = (int)Math.Round(Math.Sqrt(Math.Pow(piece[2] - helper_x, 2) + Math.Pow(helper_y - piece[3], 2))) + 1;
-                }
-                else
+                int cols, rows;
+                
+                if (angle.Equals(0))
                 {
                     cols = piece[2] - piece[0] + 1;
                     rows = piece[3] - piece[1] + 1;
                 }
-
-                Image<Bgr, byte> tmp = new Image<Bgr, byte>(cols, rows);
-                MIplImage m = tmp.MIplImage;
-                byte* newImagePointer = (byte*)m.imageData.ToPointer();
-                int nChan_new = m.nChannels;
-                int padding_new = m.widthStep - m.nChannels * m.width;
-                int step_new = m.widthStep;
-
-                int x_p = piece[0];
-                int y_p = piece[1];
-                int x2;
-                int y2;
-
-                for (int y = 0; y < rows; y++)
+                else
                 {
-                    for (int x = 0; x < cols; x++)
+                    cols = (int)Math.Round(Math.Sqrt(Math.Pow(helperX - piece[0], 2) + Math.Pow(piece[1] - helperY, 2))) + 1;
+                    rows = (int)Math.Round(Math.Sqrt(Math.Pow(piece[2] - helperX, 2) + Math.Pow(helperY - piece[3], 2))) + 1;
+                }
+
+                var newImage = new Image<Bgr, byte>(cols, rows);
+                var m = newImage.MIplImage;
+                var newImagePointer = (byte*) m.imageData.ToPointer();
+                var nChanNew = m.nChannels;
+                var paddingNew = m.widthStep - m.nChannels * m.width;
+
+                var xP = piece[0];
+                var yP = piece[1];
+
+                var prevPixel = dataPtrOriginal;
+
+                for (var y = 0; y < rows; y++)
+                {
+                    for (var x = 0; x < cols; x++)
                     {
-                        if (angle != 0.0)
+                        int x2;
+                        int y2;
+                        if (angle.Equals(0))
                         {
-                            x2 = (int)Math.Round(x * Math.Cos(-angle) - y * Math.Sin(-angle) + x_p);
-                            y2 = (int)Math.Round(x * Math.Sin(-angle) + y * Math.Cos(-angle) + y_p);
+                            x2 = x + xP;
+                            y2 = y + yP;
                         }
                         else
                         {
-                            x2 = x + x_p;
-                            y2 = y + y_p;
+                            x2 = (int)Math.Round(x * Math.Cos(-angle) - y * Math.Sin(-angle) + xP);
+                            y2 = (int)Math.Round(x * Math.Sin(-angle) + y * Math.Cos(-angle) + yP);
                         }
 
-                        newImagePointer[0] = (dataPtrOriginal + (x2 * nChan) + (y2 * step))[0];
-                        newImagePointer[1] = (dataPtrOriginal + (x2 * nChan) + (y2 * step))[1];
-                        newImagePointer[2] = (dataPtrOriginal + (x2 * nChan) + (y2 * step))[2];
+                        newImagePointer[0] = (dataPtrOriginal + x2 * nChan + y2 * step)[0];
+                        newImagePointer[1] = (dataPtrOriginal + x2 * nChan + y2 * step)[1];
+                        newImagePointer[2] = (dataPtrOriginal + x2 * nChan + y2 * step)[2];
 
+                        
+                        int i = 1;
+                        if(newImagePointer[0] == _backgroundB && newImagePointer[1] == _backgroundG && newImagePointer[2] == _backgroundR)
+                        {
+                            newImagePointer[0] = prevPixel[0];
+                            newImagePointer[1] = prevPixel[1];
+                            newImagePointer[2] = prevPixel[2];
+                            i++;
+                            Console.WriteLine("III: " + i);
+                        }
 
-                        // No longer a problem
-                        //int count = 1;
-                        //while (newImagePointer[0] == back_b && newImagePointer[1] == back_g && newImagePointer[1] == back_r)
-                        //{
-                        //    Console.WriteLine("BACK " + count);
-                        //    newImagePointer[0] = (dataPtrOriginal + ((x2 + count) * nChan) + (y2 * step))[0];
-                        //    newImagePointer[1] = (dataPtrOriginal + ((x2 + count) * nChan) + (y2 * step))[1];
-                        //    newImagePointer[2] = (dataPtrOriginal + ((x2 + count) * nChan) + (y2 * step))[2];
-                        //}
+                        prevPixel = (dataPtrOriginal + x2 * nChan + y2 * step);
 
-                        newImagePointer += nChan_new;
+                        newImagePointer += nChanNew;
                     }
-                    newImagePointer += padding_new;
+                    
+                    newImagePointer += paddingNew;
                 }
 
-                if (angle != 0.0)
-                {
-                    //TODO fix borders
-                }
+                newImage.Save("./imgs/piece" + partsID++ + ".png");
 
-                return tmp;
+                return newImage;
             }
         }
 
-        public void getPiecesPosition(out List<int[]> Pieces_positions, out List<int> Pieces_angle)
+        public void GetPiecesPosition(out List<int[]> Pieces_positions, out List<int> Pieces_angle)
         {
-            int width = labels.GetLength(0);
-            int height = labels.GetLength(1);
+            var width = _labels.GetLength(0);
+            var height = _labels.GetLength(1);
 
             Pieces_positions = new List<int[]>();
             Pieces_angle = new List<int>();
 
-            int[] piece_vector;
-            int[] x_top_left = new int[MaxNumberPieces];
-            int[] y_top_left = new int[MaxNumberPieces];
-            int[] helper_point_x = new int[MaxNumberPieces];
-            int[] helper_point_y = new int[MaxNumberPieces];
-            int[] x_bottom_right = new int[MaxNumberPieces];
-            int[] y_bottom_right = new int[MaxNumberPieces];
+            var xTopLeft = new int[MaxNumberPieces];
+            var yTopLeft = new int[MaxNumberPieces];
+            
+            var xHelper = new int[MaxNumberPieces];
+            var yHelper = new int[MaxNumberPieces];
+            
+            var xBottomRight = new int[MaxNumberPieces];
+            var yBottomRight = new int[MaxNumberPieces];
 
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
-                    if (labels[x, y] != UInt32.MaxValue)
+                    if (_labels[x, y] == uint.MaxValue) continue;
+                    
+                    // TODO if a value is already set ignore / overwrite depending
+                    
+                    if (_labels[x, y - 1] == uint.MaxValue && _labels[x - 1, y] == uint.MaxValue && _labels[x - 1, y + 2] == uint.MaxValue)
                     {
-                        //TODO if a value is already set ignore / overwrite depending
-                        if (labels[x, y - 1] == UInt32.MaxValue && labels[x - 1, y] == UInt32.MaxValue && labels[x - 1, y + 2] == UInt32.MaxValue)
-                        {
-                            // Found a top left corner
-                            int index = getLabelIndex(labels[x, y]);
+                        // Found a top left corner
+                        var index = GetLabelIndex(_labels[x, y]);
 
-                            x_top_left[index] = x;
-                            y_top_left[index] = y;
+                        xTopLeft[index] = x;
+                        yTopLeft[index] = y;
 
-                            Console.WriteLine("Label: " + labels[x, y]);
-                            Console.WriteLine("Top Left X: " + x);
-                            Console.WriteLine("Top Left Y: " + y);
+                        Console.WriteLine("Label: " + _labels[x, y]);
+                        Console.WriteLine("Top Left X: " + x);
+                        Console.WriteLine("Top Left Y: " + y);
 
-                        }
-                        else if (labels[x, y + 1] == UInt32.MaxValue && labels[x + 1, y] == UInt32.MaxValue && labels[x + 1, y - 2] == UInt32.MaxValue)
-                        {
-                            // Found a bottom right corner
-                            int index = getLabelIndex(labels[x, y]);
-                            x_bottom_right[index] = x;
-                            y_bottom_right[index] = y;
+                    }
+                    else if (_labels[x, y + 1] == uint.MaxValue && _labels[x + 1, y] == uint.MaxValue && _labels[x + 1, y - 2] == uint.MaxValue)
+                    {
+                        // Found a bottom right corner
+                        var index = GetLabelIndex(_labels[x, y]);
+                        
+                        xBottomRight[index] = x;
+                        yBottomRight[index] = y;
 
-                            Console.WriteLine("Label: " + labels[x, y]);
-                            Console.WriteLine("Bottom Right X: " + x);
-                            Console.WriteLine("Bottom Right Y: " + y);
-                        }
-                        else if (labels[x, y - 1] == UInt32.MaxValue && labels[x + 1, y] == UInt32.MaxValue && labels[x - 2, y - 1] == UInt32.MaxValue)
-                        {
-                            // Found a top right corner (helper)
-                            int index = getLabelIndex(labels[x, y]);
+                        Console.WriteLine("Label: " + _labels[x, y]);
+                        Console.WriteLine("Bottom Right X: " + x);
+                        Console.WriteLine("Bottom Right Y: " + y);
+                    }
+                    else if (_labels[x, y - 1] == UInt32.MaxValue && _labels[x + 1, y] == UInt32.MaxValue && _labels[x - 2, y - 1] == UInt32.MaxValue)
+                    {
+                        // Found a top right corner (helper)
+                        var index = GetLabelIndex(_labels[x, y]);
 
-                            helper_point_x[index] = x;
-                            helper_point_y[index] = y;
+                        xHelper[index] = x;
+                        yHelper[index] = y;
 
-                            Console.WriteLine("Label: " + labels[x, y]);
-                            Console.WriteLine("Top Right X: " + x);
-                            Console.WriteLine("Top Right Y: " + y);
-                        }
+                        Console.WriteLine("Label: " + _labels[x, y]);
+                        Console.WriteLine("Top Right X: " + x);
+                        Console.WriteLine("Top Right Y: " + y);
                     }
                 }
             }
 
-            for (int i = 0; i < this.curr_label_index; i++)
+            for (var i = 0; i < _currLabelIndex; i++)
             {
-                piece_vector = new int[4];
-                piece_vector[0] = x_top_left[i];   // x- Top-Left 
-                piece_vector[1] = y_top_left[i];  // y- Top-Left
-                piece_vector[2] = x_bottom_right[i]; // x- Bottom-Right
-                piece_vector[3] = y_bottom_right[i]; // y- Bottom-Right
-                Pieces_positions.Add(piece_vector);
+                var pieceVector = new int[4];
+                pieceVector[0] = xTopLeft[i];   // x- Top-Left 
+                pieceVector[1] = yTopLeft[i];  // y- Top-Left
+                pieceVector[2] = xBottomRight[i]; // x- Bottom-Right
+                pieceVector[3] = yBottomRight[i]; // y- Bottom-Right
+                
+                Pieces_positions.Add(pieceVector);
                 double rads;
-                if (helper_point_x[i] == x_top_left[i] && helper_point_y[i] == y_top_left[i])
+                
+                if (xHelper[i] == xTopLeft[i] && yHelper[i] == yTopLeft[i])
                 {
                     // No rotation needed
                     Pieces_angle.Add(0);
@@ -359,522 +383,113 @@ namespace SS_OpenCV
                 else
                 {
                     //Calculate Angle
-                    double oppositive = y_top_left[i] - helper_point_y[i];
-                    double adjancent = helper_point_x[i] - x_top_left[i];
-                    rads = Math.Tanh(oppositive / adjancent);
-                    Console.WriteLine("Angle: " + this.RadsToDegrees(rads));
-                    Pieces_angle.Add(this.RadsToDegrees(rads));
-                }
-
-                images_pieces.Add(this.GetImagesPieces(piece_vector, rads, helper_point_x[i], helper_point_y[i]));
-            }
-        }
-
-        private SideValues CompareSides(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
-        {
-            unsafe
-            {
-                // top = 0; right = 1; bottom = 2; left = 3;
-                int best_side = -1;
-                double best_diff = Double.MaxValue;
-                double factor_border = 1;
-                double factor_in_1 = 0.4; ;// 0.75;
-                double factor_in_2 = 0.2;// 0.50;
-                double factor_in_3 = 0.1;// 0.25;
-
-                // Image 1 data
-                MIplImage image1 = img1.MIplImage;
-                byte* image1Pointer = (byte*)image1.imageData.ToPointer();
-                byte* pointerCopy1 = image1Pointer;
-                int nChan1 = image1.nChannels;
-                int padding1 = image1.widthStep - image1.nChannels * image1.width;
-                int step1 = image1.widthStep;
-                int width1 = img1.Width;
-                int height1 = img1.Height;
-
-                // Image 2 data
-                MIplImage image2 = img2.MIplImage;
-                byte* image2Pointer = (byte*)image2.imageData.ToPointer();
-                byte* pointerCopy2 = image2Pointer;
-                int nChan2 = image2.nChannels;
-                int padding2 = image2.widthStep - image2.nChannels * image2.width;
-                int step2 = image2.widthStep;
-                int width2 = img2.Width;
-                int height2 = img2.Height;
-
-                double diff;
-                double scale;
-
-                byte* tmp1, tmp2;
-
-                // [START] 0 TOP->BOTTOM
-                //Console.WriteLine("Comparing TOP img1 to BOTTOM img2");
-                image2Pointer += step2 * (height2 - 1);
-
-                diff = 0;
-                scale = (width1 > width2) ? width1 / (double)width2 : width2 / (double)width1;
-                //Console.WriteLine("Scale: " + scale);
-                if (width1 == width2)
-                {
-                    //Console.WriteLine("Width img1 == Wigth img2");
-                    for (int y = 0; y < width1; y++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer + step1;
-                        tmp2 = image2Pointer - step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255 ) * factor_in_1;
-                        tmp1 += step1;
-                        tmp2 -= step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 += step1;
-                        tmp2 -= step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        //Console.WriteLine("Image1 = " + image1Pointer[0] + ",\t" + image1Pointer[1] + ",\t" + image1Pointer[2]);
-                        //Console.WriteLine("Image2 = " + image2Pointer[0] + ",\t" + image2Pointer[1] + ",\t" + image2Pointer[2]);
-                        image1Pointer += nChan1;
-                        image2Pointer += nChan2;
-                    }
-                }
-                else if (width1 > width2)
-                {
-                    //Console.WriteLine("Width img1 > Wigth img2");
-                    int pos = 1;
-                    for (int y = 0; y < width1; y++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer + step1;
-                        tmp2 = image2Pointer - step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 += step1;
-                        tmp2 -= step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 += step1;
-                        tmp2 -= step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image1Pointer += nChan1;
-                        if (pos % scale == 0)
-                            image2Pointer += nChan2;
-                        pos++;
-                    }
-                }
-                else
-                {
-                    //Console.WriteLine("Width img1 < Wigth img2");
-                    int pos = 1;
-                    for (int y = 0; y < width2; y++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer + step1;
-                        tmp2 = image2Pointer - step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 += step1;
-                        tmp2 -= step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 += step1;
-                        tmp2 -= step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image2Pointer += nChan2;
-                        if (pos % scale == 0)
-                            image1Pointer += nChan1;
-                        pos++;
-                    }
-                }
-                //Console.WriteLine("DIFF: " + diff);
-                if (diff < best_diff)
-                {
-                    best_diff = diff;
-                    best_side = 0;
-                }
-                // [END] 0 TOP->BOTTOM
-
-                // [START] 1 RIGHT->LEFT
-                //Console.WriteLine("Comparing RIGHT img1 to LEFT img2");
-                image1Pointer = pointerCopy1;
-                image1Pointer += nChan1 * (width1 - 1);
-
-                image2Pointer = pointerCopy2;
-
-                diff = 0;
-                scale = (height1 > height2) ? height1 / (double)height2 : height2 / (double)height1;
-                //Console.WriteLine("Scale: " + scale);
-                if (height1 == height2)
-                {
-                    //Console.WriteLine("Height img1 == Height img2");
-                    for (int x = 0; x < height1; x++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer - nChan1;
-                        tmp2 = image2Pointer + nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 -= nChan1;
-                        tmp2 += nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 -= nChan1;
-                        tmp2 += nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image1Pointer += step1;
-                        image2Pointer += step2;
-                    }
-                }
-                else if (height1 > height2)
-                {
-                    //Console.WriteLine("Height img1 > Height img2");
-                    int pos = 1;
-                    for (int x = 0; x < height1; x++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer - nChan1;
-                        tmp2 = image2Pointer + nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 -= nChan1;
-                        tmp2 += nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 -= nChan1;
-                        tmp2 += nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image1Pointer += step1;
-                        if (pos % scale == 0)
-                            image2Pointer += step2;
-                        pos++;
-                    }
-                }
-                else
-                {
-                    //Console.WriteLine("Height img1 < Height img2");
-                    int pos = 1;
-                    for (int x = 0; x < height2; x++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer - nChan1;
-                        tmp2 = image2Pointer + nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 -= nChan1;
-                        tmp2 += nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 -= nChan1;
-                        tmp2 += nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image2Pointer += step2;
-                        if (pos % scale == 0)
-                            image1Pointer += step1;
-                        pos++;
-                    }
-                }
-                //Console.WriteLine("DIFF: " + diff);
-                if (diff < best_diff)
-                {
-                    best_diff = diff;
-                    best_side = 1;
-                }
-                // [END] 1 RIGHT->LEFT
-
-                // [START] 2 BOTTOM->TOP
-                //Console.WriteLine("Comparing BOTTOM img1 to TOP img2");
-                image1Pointer = pointerCopy1;
-                image1Pointer += step1 * (height1 - 1);
-
-                image2Pointer = pointerCopy2;
-
-                diff = 0;
-                scale = (width1 > width2) ? width1 / (double)width2 : width2 / (double)width1;
-                //Console.WriteLine("Scale: " + scale);
-                if (width1 == width2)
-                {
-                    //Console.WriteLine("Width img1 == Height img2");
-                    for (int y = 0; y < width1; y++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer - step1;
-                        tmp2 = image2Pointer + step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 -= step1;
-                        tmp2 += step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 -= step1;
-                        tmp2 += step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-
-                        image1Pointer += nChan1;
-                        image2Pointer += nChan2;
-                    }
-                }
-                else if (width1 > width2)
-                {
-                    //Console.WriteLine("Width img1 > Height img2");
-                    int pos = 1;
-                    for (int y = 0; y < width1; y++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer - step1;
-                        tmp2 = image2Pointer + step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 -= step1;
-                        tmp2 += step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 -= step1;
-                        tmp2 += step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image1Pointer += nChan1;
-                        if (pos % scale == 0)
-                            image2Pointer += nChan2;
-                        pos++;
-                    }
-                }
-                else
-                {
-                    //Console.WriteLine("Width img1 < Height img2");
-                    int pos = 1;
-                    for (int y = 0; y < width2; y++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer - step1;
-                        tmp2 = image2Pointer + step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 -= step1;
-                        tmp2 += step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 -= step1;
-                        tmp2 += step2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image2Pointer += nChan2;
-                        if (pos % scale == 0)
-                            image1Pointer += nChan1;
-                        pos++;
-                    }
-                }
-                //Console.WriteLine("DIFF: " + diff);
-                if (diff < best_diff)
-                {
-                    best_diff = diff;
-                    best_side = 2;
-                }
-                // [END] 2 BOTTOM->TOP
-
-                // [START] 3 LEFT->RIGHT
-                //Console.WriteLine("Comparing LEFT img1 to RIGHT img2");
-                image1Pointer = pointerCopy1;
-
-                image2Pointer = pointerCopy2;
-                image2Pointer += nChan2 * (width2 - 1);
-
-                diff = 0;
-                scale = (height1 > height2) ? height1 / (double)height2 : height2 / (double)height1;
-                //Console.WriteLine("Scale: " + scale);
-                if (height1 == height2)
-                {
-                    //Console.WriteLine("Height img1 == Height img2");
-                    for (int x = 0; x < height1; x++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer + nChan1;
-                        tmp2 = image2Pointer - nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 += nChan1;
-                        tmp2 -= nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 += nChan1;
-                        tmp2 -= nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image1Pointer += step1;
-                        image2Pointer += step2;
-                    }
-                }
-                else if (height1 > height2)
-                {
-                    //Console.WriteLine("Height img1 > Height img2");
-                    int pos = 1;
-                    for (int x = 0; x < height1; x++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer + nChan1;
-                        tmp2 = image2Pointer - nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 += nChan1;
-                        tmp2 -= nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 += nChan1;
-                        tmp2 -= nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image1Pointer += step1;
-                        if (pos % scale == 0)
-                            image2Pointer += step2;
-                        pos++;
-                    }
-                }
-                else
-                {
-                    //Console.WriteLine("Height img1 < Height img2");
-                    int pos = 1;
-                    for (int x = 0; x < height2; x++)
-                    {
-                        diff += ((Math.Abs(image1Pointer[0] - image2Pointer[0]) + Math.Abs(image1Pointer[1] - image2Pointer[1]) + Math.Abs(image1Pointer[2] - image2Pointer[2])) / 3.0 / 255) * factor_border;
-                        tmp1 = image1Pointer + nChan1;
-                        tmp2 = image2Pointer - nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_1;
-                        tmp1 += nChan1;
-                        tmp2 -= nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_2;
-                        tmp1 += nChan1;
-                        tmp2 -= nChan2;
-                        diff += ((Math.Abs(tmp1[0] - tmp2[0]) + Math.Abs(tmp1[1] - tmp2[1]) + Math.Abs(tmp1[2] - tmp2[2])) / 3.0 / 255) * factor_in_3;
-
-                        image2Pointer += step2;
-                        if (pos % scale == 0)
-                            image1Pointer += step1;
-                        pos++;
-                    }
-                }
-                //Console.WriteLine("DIFF: " + diff);
-                if (diff < best_diff)
-                {
-                    best_diff = diff;
-                    best_side = 3;
-                }
-                // [END] 3 LEFT->RIGHT
-
-                // TODO IF two sides have same diff ?
-
-                Console.WriteLine("Best side: " + best_side + ", diff: " + best_diff);
-
-                return new SideValues(best_side, best_diff);
-            }
-        }
-
-        private struct SideValues
-        {
-            public int side;
-            public double value;
-            public SideValues(int side, double value)
-            {
-                this.side = side;
-                this.value = value;
-            }
-        }
-
-        public Image<Bgr, byte> getFinalImage()
-        {
-            //TMP
-            SideValues[,] best_diffs;// = new SideValues[images_pieces.Count, images_pieces.Count];
-
-            while (images_pieces.Count != 1)
-            {
-                
-                best_diffs = new SideValues[images_pieces.Count, images_pieces.Count];
-                int curr_pos = 0;
-                foreach (Image<Bgr, byte> curr_piece in images_pieces)
-                {
-                    int next_pos = 0;
-                    foreach (Image<Bgr, byte> next_piece in images_pieces)
-                    {
-                        if (curr_pos >= next_pos)
-                        {
-                            //Be gone
-                        }
-
-                        else
-                        {
-                            Console.WriteLine("Best Side for: " + curr_pos + " vs: " + next_pos);
-                            best_diffs[curr_pos, next_pos] = CompareSides(curr_piece, next_piece);
-                        }
-
-                        next_pos++;
-                    }
-
-                    curr_pos++;
-                }
-
-                // Analize best diffs
-                CombineImages(best_diffs);
-            }
-
-
-            return images_pieces[0];
-        }
-
-        private void CombineImages(SideValues[,] best_diffs)
-        {
-            int best_piece1 = 0, best_piece2 = 0, best_side = 0;
-            double best_diff = double.MaxValue;
-            SideValues s_value;
-
-            for (int i = 0; i < images_pieces.Count; i++)
-            {
-                for (int j = 0; j < images_pieces.Count; j++)
-                {
-                    if (i >= j)
-                    {
-                        // Get lost
-                    } else {
-                        s_value = best_diffs[i, j];
-                        Console.WriteLine(s_value.value);
-                        Console.WriteLine(s_value.side);
-
-                        if(s_value.value < best_diff)
-                        {
-                            best_diff = s_value.value;
-                            best_piece1 = i;
-                            best_piece2 = j;
-                            best_side = s_value.side;
-                        }
-                    }
-
- 
+                    double opposite = yTopLeft[i] - yHelper[i];
+                    double adjacent = xHelper[i] - xTopLeft[i];
                     
+                    rads = Math.Tanh(opposite / adjacent);
+                    Console.WriteLine("Angle:\t" + RadsToDegrees(rads));
+                    
+                    Pieces_angle.Add(RadsToDegrees(rads));
+                }
+
+                _imagesPieces.Add(GetImagesPieces(pieceVector, rads, xHelper[i], yHelper[i]));
+            }
+        }
+
+        private void CombinePieces(SideValues[,] bestDiffs)
+        {
+            var bestPiece1 = 0;
+            var bestPiece2 = 0;
+            var bestSide = 0;
+            var bestDiff = double.MaxValue;
+
+            for (var i = 0; i < _imagesPieces.Count; i++)
+            {
+                for (var j = 0; j < _imagesPieces.Count; j++)
+                {
+                    // Only check half of the matrix
+                    if (i >= j) continue;
+                    
+                    var sValue = bestDiffs[i, j];
+                    
+                    if (sValue.Diff >= bestDiff) continue;
+                        
+                    bestDiff = sValue.Diff;
+                    bestPiece1 = i;
+                    bestPiece2 = j;
+                    bestSide = sValue.Side;
                 }
             }
+            
+            Console.WriteLine("Piece1:\t" + bestPiece1);
+            Console.WriteLine("Piece2:\t" + bestPiece2);
+            Console.WriteLine("Side:\t" + bestSide);
+            
+            var piece1 = _imagesPieces[bestPiece1];
+            var piece2 = _imagesPieces[bestPiece2];
 
-            // TMP Clear 2 lines and colums
-            /*
-            for (int i = 0; i < images_pieces.Count; i++)
-            {
-                best_diffs[best_piece1, i] = new SideValues(Int32.MaxValue, Double.MaxValue);
-                best_diffs[best_piece2, i] = new SideValues(Int32.MaxValue, Double.MaxValue);
-            }
-            for (int i = 0; i < images_pieces.Count; i++)
-            {
-                best_diffs[i, best_piece1] = new SideValues(Int32.MaxValue, Double.MaxValue);
-                best_diffs[i, best_piece2] = new SideValues(Int32.MaxValue, Double.MaxValue);
-            }
-            */
-            Console.WriteLine("Piece1: " + best_piece1);
-            Console.WriteLine("Piece2: " + best_piece2);
-            Console.WriteLine("Side: " + best_side);
-            Image<Bgr, byte> piece1 = images_pieces[best_piece1];
-            Image<Bgr, byte> piece2 = images_pieces[best_piece2];
+            _imagesPieces.Remove(piece1);
+            _imagesPieces.Remove(piece2);
 
-            images_pieces.Remove(piece1);
-            images_pieces.Remove(piece2);
+            // Combine Pieces
+            Image<Bgr, byte> newPiece;
 
-            // Combine Images
-            switch(best_side)
+            switch (bestSide)
             {
                 case 0:
-                    images_pieces.Add(PuzzleHelper.CombineImageTopBottom(piece1, piece2));
+                    newPiece = PuzzleHelper.CombinePiecesTopBottom(piece1, piece2);
                     break;
                 case 1:
-                    images_pieces.Add(PuzzleHelper.CombineImageRightLeft(piece1, piece2));
+                    newPiece = PuzzleHelper.CombinePiecesRightLeft(piece1, piece2);
                     break;
                 case 2:
-                    images_pieces.Add(PuzzleHelper.CombineImageBottomTop(piece1, piece2));
+                    newPiece = PuzzleHelper.CombinePiecesBottomTop(piece1, piece2);
                     break;
                 case 3:
-                    images_pieces.Add(PuzzleHelper.CombineImageLeftRight(piece1, piece2));
+                    newPiece = PuzzleHelper.CombinePiecesLeftRight(piece1, piece2);
                     break;
                 default:
-                    Console.WriteLine("ERROR: Combining images");
+                    Console.WriteLine("ERROR: Combining pieces");
+                    newPiece = new Image<Bgr, byte>(0,0);
                     break;
             }
+
+            newPiece.Save("./imgs/part" + pieceID++ + ".png");
+            _imagesPieces.Add(newPiece);
+        }
+        
+        public Image<Bgr, byte> GetFinalImage()
+        {
+            // TODO Keep values between iterations
+            SideValues[,] bestDiffs;
+
+            while (_imagesPieces.Count != 1)
+            { 
+                bestDiffs = new SideValues[_imagesPieces.Count, _imagesPieces.Count];
+                var currPos = 0;
+                foreach (var currPiece in _imagesPieces)
+                {
+                    var nextPos = 0;
+                    foreach (var nextPiece in _imagesPieces)
+                    {
+                        if (currPos < nextPos)
+                        {
+                            Console.WriteLine("Best Side: " + currPos + " vs: " + nextPos);
+                            
+                            var bestDiff = PuzzleHelper.CompareSides(currPiece, nextPiece);
+                            bestDiffs[currPos, nextPos] = bestDiff;
+                        }
+
+                        nextPos++;
+                    }
+
+                    currPos++;
+                }
+
+                CombinePieces(bestDiffs);
+            }
+
+            return _imagesPieces[0];
         }
 
     }
