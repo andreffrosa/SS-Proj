@@ -30,6 +30,8 @@ namespace SS_OpenCV
         private readonly uint[] _labelsIndex;
         private int _currLabelIndex;
 
+        private const uint BASE_VALUE = 0;
+
         // TODO for testing
         private int pieceID;
         private int partsID;
@@ -44,10 +46,20 @@ namespace SS_OpenCV
             _currLabelIndex = 0;
             _imagesPieces = new List<Image<Bgr, byte>>();
 
+            unsafe
+            {
+                MIplImage m = _originalImage.MIplImage;
+                byte* dataPtrOriginal = (byte*)m.imageData.ToPointer();
+                _backgroundB = dataPtrOriginal[0];
+                _backgroundG = dataPtrOriginal[1];
+                _backgroundR = dataPtrOriginal[2];
+            }
+
             pieceID = 0;
             partsID = 0;
 
-            GetLabels();
+            //GetLabels();
+            _labels = PuzzleClassic.getLabelsClassic(img);
         }
 
         private static int RadsToDegrees(double rads)
@@ -88,7 +100,7 @@ namespace SS_OpenCV
                         }
                         else
                         {
-                            _labels[x, y] = UInt32.MaxValue;
+                            _labels[x, y] = BASE_VALUE;
                         }
                         dataPtrOriginal += nChan;
                     }
@@ -109,7 +121,7 @@ namespace SS_OpenCV
                         for (int x = 1; x < width - 1; x++)
                         {
                             uint tmp = _labels[x, y];
-                            if (_labels[x, y] != UInt32.MaxValue)
+                            if (_labels[x, y] != BASE_VALUE)
                             {
                                 if (_labels[x, y] > _labels[x - 1, y - 1])
                                 {
@@ -160,7 +172,7 @@ namespace SS_OpenCV
                         {
 
                             uint tmp = _labels[x, y];
-                            if (_labels[x, y] != UInt32.MaxValue)
+                            if (_labels[x, y] != BASE_VALUE)
                             {
                                 if (_labels[x, y] > _labels[x - 1, y - 1])
                                 {
@@ -278,11 +290,14 @@ namespace SS_OpenCV
                         if(newImagePointer[0] == _backgroundB && newImagePointer[1] == _backgroundG && newImagePointer[2] == _backgroundR)
                         {
                             if (prevPixel == null) Console.WriteLine("ERROR null prev pixel");
-                            newImagePointer[0] = prevPixel[0];
-                            newImagePointer[1] = prevPixel[1];
-                            newImagePointer[2] = prevPixel[2];
-                            i++;
-                            Console.WriteLine("III: " + i);
+                            else
+                            {
+                                newImagePointer[0] = prevPixel[0];
+                                newImagePointer[1] = prevPixel[1];
+                                newImagePointer[2] = prevPixel[2];
+                                i++;
+                               // Console.WriteLine("III: " + i);
+                            }
                         }
                         else
                         {
@@ -324,11 +339,11 @@ namespace SS_OpenCV
             {
                 for (var x = 0; x < width; x++)
                 {
-                    if (_labels[x, y] == uint.MaxValue) continue;
+                    if (_labels[x, y] == BASE_VALUE) continue;
                     
                     // TODO if a value is already set ignore / overwrite depending
                     
-                    if (_labels[x, y - 1] == uint.MaxValue && _labels[x - 1, y] == uint.MaxValue && _labels[x - 1, y + 2] == uint.MaxValue)
+                    if (_labels[x, y - 1] == BASE_VALUE && _labels[x - 1, y] == BASE_VALUE && _labels[x - 1, y + 2] == BASE_VALUE)
                     {
                         // Found a top left corner
                         var index = GetLabelIndex(_labels[x, y]);
@@ -341,7 +356,7 @@ namespace SS_OpenCV
                         Console.WriteLine("Top Left Y: " + y);
 
                     }
-                    else if (_labels[x, y + 1] == uint.MaxValue && _labels[x + 1, y] == uint.MaxValue && _labels[x + 1, y - 2] == uint.MaxValue)
+                    else if (_labels[x, y + 1] == BASE_VALUE && _labels[x + 1, y] == BASE_VALUE && _labels[x + 1, y - 2] == BASE_VALUE)
                     {
                         // Found a bottom right corner
                         var index = GetLabelIndex(_labels[x, y]);
@@ -353,7 +368,7 @@ namespace SS_OpenCV
                         Console.WriteLine("Bottom Right X: " + x);
                         Console.WriteLine("Bottom Right Y: " + y);
                     }
-                    else if (_labels[x, y - 1] == UInt32.MaxValue && _labels[x + 1, y] == UInt32.MaxValue && _labels[x - 2, y - 1] == UInt32.MaxValue)
+                    else if (_labels[x, y - 1] == BASE_VALUE && _labels[x + 1, y] == BASE_VALUE && _labels[x - 2, y - 1] == BASE_VALUE)
                     {
                         // Found a top right corner (helper)
                         var index = GetLabelIndex(_labels[x, y]);
