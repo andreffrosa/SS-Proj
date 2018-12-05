@@ -4,17 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public static class PuzzleClassic
+
+namespace SS_OpenCV
 {
-
-
+    public static class PuzzleClassic
+    {
         public static uint computeClosure(Dictionary<uint, uint> equivalence_table, uint key)
         {
             LinkedList<uint> path = new LinkedList<uint>();
 
             uint closure = key, value, current_key = key;
             while (equivalence_table.TryGetValue(current_key, out value))
-            { // Already has an entry with the same key
+            {
+                // Already has an entry with the same key
                 path.AddFirst(current_key);
                 closure = value;
                 current_key = value;
@@ -29,11 +31,12 @@ public static class PuzzleClassic
         }
 
 
-    public static uint insertEquivalence(Dictionary<uint, uint> equivalence_table, uint key, uint value)
+        public static uint insertEquivalence(Dictionary<uint, uint> equivalence_table, uint key, uint value)
         {
             uint old;
             if (equivalence_table.TryGetValue(key, out old))
-            { // Already has an entry with the same key
+            {
+                // Already has an entry with the same key
                 if (value < old)
                 {
                     uint closure = computeClosure(equivalence_table, value);
@@ -46,6 +49,7 @@ public static class PuzzleClassic
                     insertEquivalence(equivalence_table, value, old);
                     return old;
                 }
+
                 return old;
             }
             else
@@ -56,12 +60,12 @@ public static class PuzzleClassic
             }
         }
 
-    public static uint[,] getLabelsClassic(Image<Bgr, byte> img)
+        public static uint[,] getLabelsClassic(Image<Bgr, byte> img)
         {
             unsafe
             {
                 MIplImage m = img.MIplImage;
-                byte* dataPtr = (byte*)m.imageData.ToPointer();
+                byte* dataPtr = (byte*) m.imageData.ToPointer();
 
                 int width = img.Width;
                 int height = img.Height;
@@ -92,14 +96,16 @@ public static class PuzzleClassic
                             uint min_neigh_label = UInt32.MaxValue;
                             // Verificar se existe label menor ao lado
                             byte* neigh = dataPtr - nChan - step;
-                            bool not_bg = (neigh[0] != background[0] || neigh[1] != background[1] || neigh[2] != background[2]);
+                            bool not_bg = (neigh[0] != background[0] || neigh[1] != background[1] ||
+                                           neigh[2] != background[2]);
                             if (not_bg)
                             {
                                 min_neigh_label = labels[x - 1, y - 1];
                             }
 
                             neigh = dataPtr - step;
-                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] || neigh[2] != background[2]);
+                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] ||
+                                      neigh[2] != background[2]);
                             if (not_bg)
                             {
                                 current_label = labels[x, y - 1];
@@ -107,7 +113,8 @@ public static class PuzzleClassic
                                 {
                                     if (current_label < min_neigh_label)
                                     {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label, current_label);
+                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label,
+                                            current_label);
                                     }
                                     else if (current_label > min_neigh_label)
                                     {
@@ -121,7 +128,8 @@ public static class PuzzleClassic
                             }
 
                             neigh = dataPtr - step + nChan;
-                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] || neigh[2] != background[2]);
+                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] ||
+                                      neigh[2] != background[2]);
                             if (not_bg)
                             {
                                 current_label = labels[x + 1, y - 1];
@@ -129,7 +137,8 @@ public static class PuzzleClassic
                                 {
                                     if (current_label < min_neigh_label)
                                     {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label, current_label);
+                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label,
+                                            current_label);
                                     }
                                     else if (current_label > min_neigh_label)
                                     {
@@ -143,7 +152,8 @@ public static class PuzzleClassic
                             }
 
                             neigh = dataPtr - nChan;
-                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] || neigh[2] != background[2]);
+                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] ||
+                                      neigh[2] != background[2]);
                             if (not_bg)
                             {
                                 current_label = labels[x - 1, y];
@@ -151,7 +161,8 @@ public static class PuzzleClassic
                                 {
                                     if (current_label < min_neigh_label)
                                     {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label, current_label);
+                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label,
+                                            current_label);
                                     }
                                     else if (current_label > min_neigh_label)
                                     {
@@ -174,16 +185,14 @@ public static class PuzzleClassic
                             }
 
                         }
+
                         dataPtr += nChan;
                     }
+
                     dataPtr += 2 * nChan + padding;
                 }
 
-                foreach(KeyValuePair<uint, uint> e in equivalence_table)
-            {
-                Console.WriteLine(e.Key + " -> " + e.Value);
-            }
-                
+
 
                 if (equivalence_table.Count > 0)
                 {
@@ -192,15 +201,16 @@ public static class PuzzleClassic
                     bool change = false;
                     do
                     {
-                    change = false;
-                    var list = equivalence_table.ToList();
+                        change = false;
+                        var list = equivalence_table.ToList();
                         foreach (KeyValuePair<uint, uint> entry in list)
                         {
                             uint closure = computeClosure(equivalence_table, entry.Key);
                             change = (entry.Value != closure);
                         }
                     } while (change);
-                    dataPtr = (byte*)m.imageData.ToPointer() + nChan + step;
+
+                    dataPtr = (byte*) m.imageData.ToPointer() + nChan + step;
                     uint current_closure = 0;
                     current_label = 0;
 
@@ -220,14 +230,16 @@ public static class PuzzleClassic
                                 {
                                     current_closure = labels[x, y];
                                 }
+
                                 current_label = labels[x, y];
                             }
-                            
-                                labels[x, y] = current_closure;
-                            
+
+                            labels[x, y] = current_closure;
+
 
                             dataPtr += nChan;
                         }
+
                         dataPtr += 2 * nChan + padding;
                     }
                 }
@@ -237,6 +249,6 @@ public static class PuzzleClassic
         }
 
 
+    }
 
-    
 }

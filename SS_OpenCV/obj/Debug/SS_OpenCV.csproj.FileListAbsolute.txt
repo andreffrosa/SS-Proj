@@ -214,4 +214,3 @@ E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.exe.config
 E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.exe
 E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.pdb
 E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CopyComplete
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csprojAssemblyReference.cache

@@ -634,224 +634,9 @@ namespace SS_OpenCV
 
         public static void Mean_solutionB(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
-            //TODO
             unsafe
             {
-                //Original Image
-                MIplImage m = img.MIplImage;
-                byte* dataPtrOriginal = (byte*)m.imageData.ToPointer();
-                byte* tmp_original = dataPtrOriginal;
-
-                //Copy Image
-                MIplImage m_copy = imgCopy.MIplImage;
-                byte* dataPtrCopy = (byte*)m_copy.imageData.ToPointer();
-                byte* tmp_copy = dataPtrCopy;
-
-                //Image values
-                int width = img.Width;
-                int height = img.Height;
-                int nChan = m.nChannels;
-                int padding = m.widthStep - m.nChannels * m.width;
-                int step = m.widthStep;
-
-                //+step = move down
-                //+nChan = move right
-
-                //TODO - replace * 2 with <<
-
-                /* --- START BORDERS --- */
-
-                //Pointing at (0,0)
-
-                //Pixel 1 (TOP-LEFT)
-                dataPtrOriginal[0] = (byte)(Math.Round(
-                    ((dataPtrCopy)[0] * 4 + (dataPtrCopy + nChan)[0] * 2 + (dataPtrCopy + step)[0] * 2 + (dataPtrCopy + step + nChan)[0])
-                    / 9.0));
-                dataPtrOriginal[1] = (byte)(Math.Round(
-                    ((dataPtrCopy)[1] * 4 + (dataPtrCopy + nChan)[1] * 2 + (dataPtrCopy + step)[1] * 2 + (dataPtrCopy + step + nChan)[1])
-                    / 9.0));
-                dataPtrOriginal[2] = (byte)(Math.Round(
-                    ((dataPtrCopy)[2] * 4 + (dataPtrCopy + nChan)[2] * 2 + (dataPtrCopy + step)[2] * 2 + (dataPtrCopy + step + nChan)[2])
-                    / 9.0));
-
-                //Line 1 (TOP)
-                //Point to pixel (1,0)
-                dataPtrOriginal += nChan;
-                dataPtrCopy += nChan;
-
-                for (int i = 1; i < width - 1; i++)
-                {
-                    dataPtrOriginal[0] = (byte)(Math.Round(
-                        ((dataPtrCopy - nChan)[0] * 2 + (dataPtrCopy)[0] * 2 + (dataPtrCopy + nChan)[0] * 2
-                        + (dataPtrCopy + step - nChan)[0] + (dataPtrCopy + step)[0] + (dataPtrCopy + step + nChan)[0])
-                        / 9.0));
-                    dataPtrOriginal[1] = (byte)(Math.Round(
-                        ((dataPtrCopy - nChan)[1] * 2 + (dataPtrCopy)[1] * 2 + (dataPtrCopy + nChan)[1] * 2
-                        + (dataPtrCopy + step - nChan)[1] + (dataPtrCopy + step)[1] + (dataPtrCopy + step + nChan)[1])
-                        / 9.0));
-                    dataPtrOriginal[2] = (byte)(Math.Round(
-                        ((dataPtrCopy - nChan)[2] * 2 + (dataPtrCopy)[2] * 2 + (dataPtrCopy + nChan)[2] * 2
-                        + (dataPtrCopy + step - nChan)[2] + (dataPtrCopy + step)[2] + (dataPtrCopy + step + nChan)[2])
-                        / 9.0));
-
-                    dataPtrOriginal += nChan;
-                    dataPtrCopy += nChan;
-                }
-                //Pointing at pixel (width-1, 0)
-
-                //Pixel 2 (TOP-RIGHT)
-                dataPtrOriginal[0] = (byte)(Math.Round(
-                    ((dataPtrCopy)[0] * 4 + (dataPtrCopy - nChan)[0] * 2 + +(dataPtrCopy + step)[0] * 2 + (dataPtrCopy + step - nChan)[0])
-                    / 9.0));
-                dataPtrOriginal[1] = (byte)(Math.Round(
-                    ((dataPtrCopy)[1] * 4 + (dataPtrCopy - nChan)[1] * 2 + +(dataPtrCopy + step)[1] * 2 + (dataPtrCopy + step - nChan)[1])
-                    / 9.0));
-                dataPtrOriginal[2] = (byte)(Math.Round(
-                    ((dataPtrCopy)[2] * 4 + (dataPtrCopy - nChan)[2] * 2 + +(dataPtrCopy + step)[2] * 2 + (dataPtrCopy + step - nChan)[2])
-                    / 9.0));
-
-                //Line 2 (RIGHT)
-                //Point to pixel (width-1, 1)
-                dataPtrOriginal += step;
-                dataPtrCopy += step;
-
-                for (int i = 1; i < height - 1; i++)
-                {
-                    dataPtrOriginal[0] = (byte)(Math.Round(
-                                            ((dataPtrCopy - step)[0] * 2 + (dataPtrCopy)[0] * 2 + +(dataPtrCopy + step)[0] * 2
-                                            + (dataPtrCopy - step - nChan)[0] + (dataPtrCopy - nChan)[0] + (dataPtrCopy + step - nChan)[0])
-                                            / 9.0));
-                    dataPtrOriginal[1] = (byte)(Math.Round(
-                                         ((dataPtrCopy - step)[1] * 2 + (dataPtrCopy)[1] * 2 + +(dataPtrCopy + step)[1] * 2
-                                            + (dataPtrCopy - step - nChan)[1] + (dataPtrCopy - nChan)[1] + (dataPtrCopy + step - nChan)[1])
-                                            / 9.0));
-                    dataPtrOriginal[2] = (byte)(Math.Round(
-                                         ((dataPtrCopy - step)[2] * 2 + (dataPtrCopy)[2] * 2 + +(dataPtrCopy + step)[2] * 2
-                                            + (dataPtrCopy - step - nChan)[2] + (dataPtrCopy - nChan)[2] + (dataPtrCopy + step - nChan)[2])
-                                            / 9.0));
-
-                    dataPtrOriginal += step;
-                    dataPtrCopy += step;
-                }
-                //Pointing at pixel (width-1, height-1)
-
-                //Pixel 3 (BOTTOM-RIGHT)
-                dataPtrOriginal[0] = (byte)(Math.Round(
-                    ((dataPtrCopy)[0] * 4 + (dataPtrCopy - nChan)[0] * 2 + (dataPtrCopy - step)[0] * 2 + (dataPtrCopy - step - nChan)[0])
-                    / 9.0));
-                dataPtrOriginal[1] = (byte)(Math.Round(
-                    ((dataPtrCopy)[1] * 4 + (dataPtrCopy - nChan)[1] * 2 + (dataPtrCopy - step)[1] * 2 + (dataPtrCopy - step - nChan)[1])
-                    / 9.0));
-                dataPtrOriginal[2] = (byte)(Math.Round(
-                    ((dataPtrCopy)[2] * 4 + (dataPtrCopy - nChan)[2] * 2 + (dataPtrCopy - step)[2] * 2 + (dataPtrCopy - step - nChan)[2])
-                    / 9.0));
-
-                //Line 3 (BOTTOM)
-                //Point to pixel (width-2, height-1)
-                dataPtrOriginal -= nChan;
-                dataPtrCopy -= nChan;
-
-                for (int i = 1; i < width - 1; i++)
-                {
-                    dataPtrOriginal[0] = (byte)(Math.Round(
-                                            ((dataPtrCopy - nChan)[0] * 2 + (dataPtrCopy)[0] * 2 + (dataPtrCopy + nChan)[0] * 2
-                                            + (dataPtrCopy - step - nChan)[0] + (dataPtrCopy - step)[0] + (dataPtrCopy - step + nChan)[0])
-                                            / 9.0));
-                    dataPtrOriginal[1] = (byte)(Math.Round(
-                                         ((dataPtrCopy - nChan)[1] * 2 + (dataPtrCopy)[1] * 2 + (dataPtrCopy + nChan)[1] * 2
-                                            + (dataPtrCopy - step - nChan)[1] + (dataPtrCopy - step)[1] + (dataPtrCopy - step + nChan)[1])
-                                            / 9.0));
-                    dataPtrOriginal[2] = (byte)(Math.Round(
-                                         ((dataPtrCopy - nChan)[2] * 2 + (dataPtrCopy)[2] * 2 + (dataPtrCopy + nChan)[2] * 2
-                                            + (dataPtrCopy - step - nChan)[2] + (dataPtrCopy - step)[2] + (dataPtrCopy - step + nChan)[2])
-                                            / 9.0));
-
-                    dataPtrOriginal -= nChan;
-                    dataPtrCopy -= nChan;
-                }
-                //Pointing at pixel (0, height-1)
-
-                //Pixel 4 (BOTTOM-LEFT)
-                dataPtrOriginal[0] = (byte)(Math.Round(
-                    ((dataPtrCopy)[0] * 4 + (dataPtrCopy + nChan)[0] * 2 + (dataPtrCopy - step)[0] * 2 + (dataPtrCopy - step + nChan)[0])
-                    / 9.0));
-                dataPtrOriginal[1] = (byte)(Math.Round(
-                    ((dataPtrCopy)[1] * 4 + (dataPtrCopy + nChan)[1] * 2 + (dataPtrCopy - step)[1] * 2 + (dataPtrCopy - step + nChan)[1])
-                    / 9.0));
-                dataPtrOriginal[2] = (byte)(Math.Round(
-                    ((dataPtrCopy)[2] * 4 + (dataPtrCopy + nChan)[2] * 2 + (dataPtrCopy - step)[2] * 2 + (dataPtrCopy - step + nChan)[2])
-                    / 9.0));
-
-                //Line 4 (LEFT)
-                //Point to pixel (0, height-2)
-                dataPtrOriginal -= step;
-                dataPtrCopy -= step;
-
-                for (int i = 1; i < height - 1; i++)
-                {
-                    dataPtrOriginal[0] = (byte)(Math.Round(
-                                            ((dataPtrCopy - step)[0] * 2 + (dataPtrCopy)[0] * 2 + +(dataPtrCopy + step)[0] * 2
-                                            + (dataPtrCopy - step + nChan)[0] + (dataPtrCopy + nChan)[0] + (dataPtrCopy + step + nChan)[0])
-                                            / 9.0));
-                    dataPtrOriginal[1] = (byte)(Math.Round(
-                                        ((dataPtrCopy - step)[1] * 2 + (dataPtrCopy)[1] * 2 + +(dataPtrCopy + step)[1] * 2
-                                            + (dataPtrCopy - step + nChan)[1] + (dataPtrCopy + nChan)[1] + (dataPtrCopy + step + nChan)[1])
-                                            / 9.0));
-                    dataPtrOriginal[2] = (byte)(Math.Round(
-                                        ((dataPtrCopy - step)[2] * 2 + (dataPtrCopy)[2] * 2 + +(dataPtrCopy + step)[2] * 2
-                                            + (dataPtrCopy - step + nChan)[2] + (dataPtrCopy + nChan)[2] + (dataPtrCopy + step + nChan)[2])
-                                            / 9.0));
-
-                    dataPtrOriginal -= step;
-                    dataPtrCopy -= step;
-                }
-
-                //Pointing at pixel (0,0)
-
-                /* --- END BORDERS --- */
-
-
-                /* --- START CORE --- */
-
-                //Pointing at pixel (1,1)
-                dataPtrOriginal += nChan + step;
-                dataPtrCopy += nChan + step;
-
-
-                for (int y = 2; y < height - 2; y++)
-                {
-                    for (int x = 2; x < width - 2; x++)
-                    {
-                        //TODO C method
-
-                        dataPtrOriginal[0] = (byte)(
-                                (dataPtrOriginal - step)[0] - (dataPtrOriginal - nChan - step)[0] + (dataPtrOriginal - nChan)[0]
-                                + (dataPtrCopy - nChan * 2 - step * 2)[0] - (dataPtrCopy + nChan - step * 2)[0] - (dataPtrCopy - nChan * 2 + step)[0] + (dataPtrCopy + nChan + step)[0]
-                            );
-
-                        dataPtrOriginal[1] = (byte)(
-                                    (dataPtrOriginal - step)[1] - (dataPtrOriginal - nChan - step)[1] + (dataPtrOriginal - nChan)[1]
-                                + (dataPtrCopy - nChan * 2 - step * 2)[1] - (dataPtrCopy + nChan - step * 2)[1] - (dataPtrCopy - nChan * 2 + step)[1] + (dataPtrCopy + nChan + step)[1]
-                            );
-
-                        dataPtrOriginal[2] = (byte)(
-                                   (dataPtrOriginal - step)[2] - (dataPtrOriginal - nChan - step)[2] + (dataPtrOriginal - nChan)[2]
-                                + (dataPtrCopy - nChan * 2 - step * 2)[2] - (dataPtrCopy + nChan - step * 2)[2] - (dataPtrCopy - nChan * 2 + step)[2] + (dataPtrCopy + nChan + step)[2]
-                            );
-
-                        //Moving one pixel
-                        dataPtrOriginal += nChan;
-                        dataPtrCopy += nChan;
-
-                    }
-
-                    //Moving one line
-                    dataPtrOriginal += nChan * 2 + padding;
-                    dataPtrCopy += nChan * 2 + padding;
-                }
-
-
-                /* --- END CORE --- */
+               //Test.Mean_solutionB(img, imgCopy);
             }
         }
 
@@ -1504,225 +1289,119 @@ namespace SS_OpenCV
         {
             unsafe
             {
-                //TODO
                 //Original Image
-                MIplImage m = img.MIplImage;
-                byte* dataPtrOriginal = (byte*)m.imageData.ToPointer();
-                byte* tmp_original = dataPtrOriginal;
+                var m = img.MIplImage;
+                var dataPtrOriginal = (byte*)m.imageData.ToPointer();
+                var tmpOriginal = dataPtrOriginal;
 
                 //Copy Image
-                MIplImage m_copy = imgCopy.MIplImage;
-                byte* dataPtrCopy = (byte*)m_copy.imageData.ToPointer();
-                byte* tmp_copy = dataPtrCopy;
+                var mCopy = imgCopy.MIplImage;
+                var dataPtrCopy = (byte*)mCopy.imageData.ToPointer();
+                var tmpCopy = dataPtrCopy;
 
                 //Image values
-                int width = img.Width;
-                int height = img.Height;
-                int nChan = m.nChannels;
-                int padding = m.widthStep - m.nChannels * m.width;
-                int step = m.widthStep;
+                var width = img.Width;
+                var height = img.Height;
+                var nChan = m.nChannels;
+                var padding = m.widthStep - m.nChannels * m.width;
+                var step = m.widthStep;
+
+                // a | b
+                // c | d
+                int[] channels = {0, 1, 2};
+                byte* a, b, c, d;
+                int color;
 
                 //+step = move down
                 //+nChan = move right
+                
+                // Right Border
+                dataPtrOriginal += nChan * (width - 1);
+                dataPtrCopy += nChan * (width - 1);
 
-                /* --- START BORDERS --- */
-
-                //Pointing at (0,0)
-
-                //Pixel 1 (TOP-LEFT)
-                dataPtrOriginal[0] = (byte)(Math.Round(
-                    ((dataPtrCopy)[0] * 4 + (dataPtrCopy + nChan)[0] * 2 + (dataPtrCopy + step)[0] * 2 + (dataPtrCopy + step + nChan)[0])
-                    / 9.0));
-                dataPtrOriginal[1] = (byte)(Math.Round(
-                    ((dataPtrCopy)[1] * 4 + (dataPtrCopy + nChan)[1] * 2 + (dataPtrCopy + step)[1] * 2 + (dataPtrCopy + step + nChan)[1])
-                    / 9.0));
-                dataPtrOriginal[2] = (byte)(Math.Round(
-                    ((dataPtrCopy)[2] * 4 + (dataPtrCopy + nChan)[2] * 2 + (dataPtrCopy + step)[2] * 2 + (dataPtrCopy + step + nChan)[2])
-                    / 9.0));
-
-                //Line 1 (TOP)
-                //Point to pixel (1,0)
-                dataPtrOriginal += nChan;
-                dataPtrCopy += nChan;
-
-                for (int i = 1; i < width - 1; i++)
+                for (var i = 0; i < height - 1; i++)
                 {
-                    dataPtrOriginal[0] = (byte)(Math.Round(
-                        ((dataPtrCopy - nChan)[0] * 2 + (dataPtrCopy)[0] * 2 + (dataPtrCopy + nChan)[0] * 2
-                        + (dataPtrCopy + step - nChan)[0] + (dataPtrCopy + step)[0] + (dataPtrCopy + step + nChan)[0])
-                        / 9.0));
-                    dataPtrOriginal[1] = (byte)(Math.Round(
-                        ((dataPtrCopy - nChan)[1] * 2 + (dataPtrCopy)[1] * 2 + (dataPtrCopy + nChan)[1] * 2
-                        + (dataPtrCopy + step - nChan)[1] + (dataPtrCopy + step)[1] + (dataPtrCopy + step + nChan)[1])
-                        / 9.0));
-                    dataPtrOriginal[2] = (byte)(Math.Round(
-                        ((dataPtrCopy - nChan)[2] * 2 + (dataPtrCopy)[2] * 2 + (dataPtrCopy + nChan)[2] * 2
-                        + (dataPtrCopy + step - nChan)[2] + (dataPtrCopy + step)[2] + (dataPtrCopy + step + nChan)[2])
-                        / 9.0));
+                    a = b = dataPtrCopy;
+                    c = d = dataPtrCopy + step;
 
-                    dataPtrOriginal += nChan;
-                    dataPtrCopy += nChan;
-                }
-                //Pointing at pixel (width-1, 0)
+                    foreach (var ch in channels)
+                    {
+                        color = (byte) (Math.Abs(a[ch] - d[ch]) + Math.Abs(b[ch] - c[ch]));
+                        
+                        if (color > 255) color = 255;
+                        else if (color < 0) color = 0;
+                        dataPtrOriginal[ch] = (byte) color;
 
-                //Pixel 2 (TOP-RIGHT)
-                dataPtrOriginal[0] = (byte)(Math.Round(
-                    ((dataPtrCopy)[0] * 4 + (dataPtrCopy - nChan)[0] * 2 + +(dataPtrCopy + step)[0] * 2 + (dataPtrCopy + step - nChan)[0])
-                    / 9.0));
-                dataPtrOriginal[1] = (byte)(Math.Round(
-                    ((dataPtrCopy)[1] * 4 + (dataPtrCopy - nChan)[1] * 2 + +(dataPtrCopy + step)[1] * 2 + (dataPtrCopy + step - nChan)[1])
-                    / 9.0));
-                dataPtrOriginal[2] = (byte)(Math.Round(
-                    ((dataPtrCopy)[2] * 4 + (dataPtrCopy - nChan)[2] * 2 + +(dataPtrCopy + step)[2] * 2 + (dataPtrCopy + step - nChan)[2])
-                    / 9.0));
-
-                //Line 2 (RIGHT)
-                //Point to pixel (width-1, 1)
-                dataPtrOriginal += step;
-                dataPtrCopy += step;
-
-                for (int i = 1; i < height - 1; i++)
-                {
-                    dataPtrOriginal[0] = (byte)(Math.Round(
-                                            ((dataPtrCopy - step)[0] * 2 + (dataPtrCopy)[0] * 2 + +(dataPtrCopy + step)[0] * 2
-                                            + (dataPtrCopy - step - nChan)[0] + (dataPtrCopy - nChan)[0] + (dataPtrCopy + step - nChan)[0])
-                                            / 9.0));
-                    dataPtrOriginal[1] = (byte)(Math.Round(
-                                         ((dataPtrCopy - step)[1] * 2 + (dataPtrCopy)[1] * 2 + +(dataPtrCopy + step)[1] * 2
-                                            + (dataPtrCopy - step - nChan)[1] + (dataPtrCopy - nChan)[1] + (dataPtrCopy + step - nChan)[1])
-                                            / 9.0));
-                    dataPtrOriginal[2] = (byte)(Math.Round(
-                                         ((dataPtrCopy - step)[2] * 2 + (dataPtrCopy)[2] * 2 + +(dataPtrCopy + step)[2] * 2
-                                            + (dataPtrCopy - step - nChan)[2] + (dataPtrCopy - nChan)[2] + (dataPtrCopy + step - nChan)[2])
-                                            / 9.0));
-
+                    }
+                    
                     dataPtrOriginal += step;
                     dataPtrCopy += step;
                 }
-                //Pointing at pixel (width-1, height-1)
+                
+                // Right-Bottom Pixel
+                a = b = c = d = dataPtrCopy;
+                
+                foreach (var ch in channels)
+                {
+                    color = (byte) (Math.Abs(a[ch] - d[ch]) + Math.Abs(b[ch] - c[ch]));
+                                           
+                    if (color > 255) color = 255;
+                    else if (color < 0) color = 0;
+                    dataPtrOriginal[ch] = (byte) color;
+                }
 
-                //Pixel 3 (BOTTOM-RIGHT)
-                dataPtrOriginal[0] = (byte)(Math.Round(
-                    ((dataPtrCopy)[0] * 4 + (dataPtrCopy - nChan)[0] * 2 + (dataPtrCopy - step)[0] * 2 + (dataPtrCopy - step - nChan)[0])
-                    / 9.0));
-                dataPtrOriginal[1] = (byte)(Math.Round(
-                    ((dataPtrCopy)[1] * 4 + (dataPtrCopy - nChan)[1] * 2 + (dataPtrCopy - step)[1] * 2 + (dataPtrCopy - step - nChan)[1])
-                    / 9.0));
-                dataPtrOriginal[2] = (byte)(Math.Round(
-                    ((dataPtrCopy)[2] * 4 + (dataPtrCopy - nChan)[2] * 2 + (dataPtrCopy - step)[2] * 2 + (dataPtrCopy - step - nChan)[2])
-                    / 9.0));
-
-                //Line 3 (BOTTOM)
-                //Point to pixel (width-2, height-1)
+                // Bottom Border
                 dataPtrOriginal -= nChan;
                 dataPtrCopy -= nChan;
 
-                for (int i = 1; i < width - 1; i++)
+                for (var i = width - 1; i > 0; i--)
                 {
-                    dataPtrOriginal[0] = (byte)(Math.Round(
-                                            ((dataPtrCopy - nChan)[0] * 2 + (dataPtrCopy)[0] * 2 + (dataPtrCopy + nChan)[0] * 2
-                                            + (dataPtrCopy - step - nChan)[0] + (dataPtrCopy - step)[0] + (dataPtrCopy - step + nChan)[0])
-                                            / 9.0));
-                    dataPtrOriginal[1] = (byte)(Math.Round(
-                                         ((dataPtrCopy - nChan)[1] * 2 + (dataPtrCopy)[1] * 2 + (dataPtrCopy + nChan)[1] * 2
-                                            + (dataPtrCopy - step - nChan)[1] + (dataPtrCopy - step)[1] + (dataPtrCopy - step + nChan)[1])
-                                            / 9.0));
-                    dataPtrOriginal[2] = (byte)(Math.Round(
-                                         ((dataPtrCopy - nChan)[2] * 2 + (dataPtrCopy)[2] * 2 + (dataPtrCopy + nChan)[2] * 2
-                                            + (dataPtrCopy - step - nChan)[2] + (dataPtrCopy - step)[2] + (dataPtrCopy - step + nChan)[2])
-                                            / 9.0));
+                    a = c = dataPtrCopy;
+                    b = d = dataPtrCopy + nChan;
 
+                    foreach (var ch in channels)
+                    {
+                        color = (byte) (Math.Abs(a[ch] - d[ch]) + Math.Abs(b[ch] - c[ch]));
+                                                                   
+                        if (color > 255) color = 255;
+                        else if (color < 0) color = 0;
+                        dataPtrOriginal[ch] = (byte) color;
+                    }
+                    
                     dataPtrOriginal -= nChan;
                     dataPtrCopy -= nChan;
                 }
-                //Pointing at pixel (0, height-1)
 
-                //Pixel 4 (BOTTOM-LEFT)
-                dataPtrOriginal[0] = (byte)(Math.Round(
-                    ((dataPtrCopy)[0] * 4 + (dataPtrCopy + nChan)[0] * 2 + (dataPtrCopy - step)[0] * 2 + (dataPtrCopy - step + nChan)[0])
-                    / 9.0));
-                dataPtrOriginal[1] = (byte)(Math.Round(
-                    ((dataPtrCopy)[1] * 4 + (dataPtrCopy + nChan)[1] * 2 + (dataPtrCopy - step)[1] * 2 + (dataPtrCopy - step + nChan)[1])
-                    / 9.0));
-                dataPtrOriginal[2] = (byte)(Math.Round(
-                    ((dataPtrCopy)[2] * 4 + (dataPtrCopy + nChan)[2] * 2 + (dataPtrCopy - step)[2] * 2 + (dataPtrCopy - step + nChan)[2])
-                    / 9.0));
+                dataPtrOriginal = tmpOriginal;
+                dataPtrCopy = tmpCopy;
 
-                //Line 4 (LEFT)
-                //Point to pixel (0, height-2)
-                dataPtrOriginal -= step;
-                dataPtrCopy -= step;
-
-                for (int i = 1; i < height - 1; i++)
+                for (var y = 0; y < height - 1; y++)
                 {
-                    dataPtrOriginal[0] = (byte)(Math.Round(
-                                            ((dataPtrCopy - step)[0] * 2 + (dataPtrCopy)[0] * 2 + +(dataPtrCopy + step)[0] * 2
-                                            + (dataPtrCopy - step + nChan)[0] + (dataPtrCopy + nChan)[0] + (dataPtrCopy + step + nChan)[0])
-                                            / 9.0));
-                    dataPtrOriginal[1] = (byte)(Math.Round(
-                                        ((dataPtrCopy - step)[1] * 2 + (dataPtrCopy)[1] * 2 + +(dataPtrCopy + step)[1] * 2
-                                            + (dataPtrCopy - step + nChan)[1] + (dataPtrCopy + nChan)[1] + (dataPtrCopy + step + nChan)[1])
-                                            / 9.0));
-                    dataPtrOriginal[2] = (byte)(Math.Round(
-                                        ((dataPtrCopy - step)[2] * 2 + (dataPtrCopy)[2] * 2 + +(dataPtrCopy + step)[2] * 2
-                                            + (dataPtrCopy - step + nChan)[2] + (dataPtrCopy + nChan)[2] + (dataPtrCopy + step + nChan)[2])
-                                            / 9.0));
-
-                    dataPtrOriginal -= step;
-                    dataPtrCopy -= step;
-                }
-
-                //Pointing at pixel (0,0)
-
-                /* --- END BORDERS --- */
-
-
-                /* --- START CORE --- */
-
-                //Pointing at pixel (1,1)
-                dataPtrOriginal += nChan + step;
-                dataPtrCopy += nChan + step;
-
-                double blue, green, red;
-
-                for (int y = 1; y < height - 1; y++)
-                {
-                    for (int x = 1; x < width - 1; x++)
+                    for (var x = 0; x < width - 1; x++)
                     {
-                        blue = Math.Abs((dataPtrCopy)[0] - (dataPtrCopy + nChan + step)[0])
-                                + Math.Abs((dataPtrCopy + nChan)[0] - (dataPtrCopy - step)[0]);
+                        a = dataPtrCopy;
+                        b = dataPtrCopy + nChan;
+                        c = dataPtrCopy + step;
+                        d = dataPtrCopy + nChan + step;
 
-                        if (blue > 255) blue = 255;
-                        else if (blue < 0) blue = 0;
-                        dataPtrOriginal[0] = (byte)(Math.Round(blue));
-
-                        green = Math.Abs((dataPtrCopy)[1] - (dataPtrCopy + nChan + step)[1])
-                                + Math.Abs((dataPtrCopy + nChan)[1] - (dataPtrCopy - step)[1]);
-
-                        if (green > 255) green = 255;
-                        else if (green < 0) green = 0;
-                        dataPtrOriginal[1] = (byte)(Math.Round(green));
-
-                        red = Math.Abs((dataPtrCopy)[2] - (dataPtrCopy + nChan + step)[2])
-                                + Math.Abs((dataPtrCopy + nChan)[2] - (dataPtrCopy - step)[2]);
-
-                        if (red > 255) red = 255;
-                        else if (red < 0) red = 0;
-                        dataPtrOriginal[2] = (byte)(Math.Round(red));
-
+                        foreach (var ch in channels)
+                        {
+                            color = (byte) (Math.Abs(a[ch] - d[ch]) + Math.Abs(b[ch] - c[ch]));
+                                                                   
+                            if (color > 255) color = 255;
+                            else if (color < 0) color = 0;
+                            dataPtrOriginal[ch] = (byte) color;
+                        }
 
                         //Moving one pixel
                         dataPtrOriginal += nChan;
                         dataPtrCopy += nChan;
-
                     }
 
                     //Moving one line
-                    dataPtrOriginal += nChan * 2 + padding;
-                    dataPtrCopy += nChan * 2 + padding;
+                    dataPtrOriginal += nChan + padding;
+                    dataPtrCopy += nChan + padding;
                 }
-
-                /* --- END CORE --- */
             }
         }
 

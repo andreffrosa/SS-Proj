@@ -11,10 +11,10 @@ namespace SS_OpenCV
         public readonly int Side;
         public readonly double Points;
             
-        public SideValues(int side, double diff)
+        public SideValues(int side, double points)
         {
             Side = side;
-            Points = diff;
+            Points = points;
         }
     }
     
@@ -30,13 +30,15 @@ namespace SS_OpenCV
         private readonly uint[] _labelsIndex;
         private int _currLabelIndex;
 
-        private const uint BASE_VALUE = 0;
+        private const uint BaseValue = 0;
 
         // TODO for testing
         private int pieceID;
         private int partsID;
         
-        private int _backgroundB = -1, _backgroundG = -1, _backgroundR = -1;
+        private readonly int _backgroundB;
+        private readonly int _backgroundG;
+        private readonly int _backgroundR;
 
         public Puzzle(Image<Bgr, byte> img)
         {
@@ -48,8 +50,8 @@ namespace SS_OpenCV
 
             unsafe
             {
-                MIplImage m = _originalImage.MIplImage;
-                byte* dataPtrOriginal = (byte*)m.imageData.ToPointer();
+                var m = _originalImage.MIplImage;
+                var dataPtrOriginal = (byte*)m.imageData.ToPointer();
                 _backgroundB = dataPtrOriginal[0];
                 _backgroundG = dataPtrOriginal[1];
                 _backgroundR = dataPtrOriginal[2];
@@ -58,165 +60,12 @@ namespace SS_OpenCV
             pieceID = 0;
             partsID = 0;
 
-            //GetLabels();
             _labels = PuzzleClassic.getLabelsClassic(img);
         }
 
         private static int RadsToDegrees(double rads)
         {
             return (int)Math.Round(rads * RadToDegreeFactor);
-        }
-
-        private void GetLabels()
-        {
-            unsafe
-            {
-                MIplImage m = _originalImage.MIplImage;
-                byte* dataPtrOriginal = (byte*)m.imageData.ToPointer();
-                byte* originalPtr = dataPtrOriginal;
-
-                int width = _originalImage.Width;
-                int height = _originalImage.Height;
-                int nChan = m.nChannels;
-                int padding = m.widthStep - m.nChannels * m.width;
-                int step = m.widthStep;
-
-
-                bool changed = true;
-                uint curr_label = 1;
-
-                _backgroundB = dataPtrOriginal[0];
-                _backgroundG = dataPtrOriginal[1];
-                _backgroundR = dataPtrOriginal[2];
-
-                // First run
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        if (_backgroundB != dataPtrOriginal[0] || _backgroundG != dataPtrOriginal[1] || _backgroundR != dataPtrOriginal[2])
-                        {
-                            _labels[x, y] = curr_label++;
-                        }
-                        else
-                        {
-                            _labels[x, y] = BASE_VALUE;
-                        }
-                        dataPtrOriginal += nChan;
-                    }
-                    dataPtrOriginal += padding;
-                }
-
-                // Cycle
-                while (changed)
-                {
-                    changed = false;
-
-                    // Up->Down Left->Right
-                    dataPtrOriginal = originalPtr;
-                    dataPtrOriginal += nChan + step;
-                    for (int y = 1; y < height - 1; y++)
-                    {
-
-                        for (int x = 1; x < width - 1; x++)
-                        {
-                            uint tmp = _labels[x, y];
-                            if (_labels[x, y] != BASE_VALUE)
-                            {
-                                if (_labels[x, y] > _labels[x - 1, y - 1])
-                                {
-                                    _labels[x, y] = _labels[x - 1, y - 1];
-                                }
-                                if (_labels[x, y] > _labels[x, y - 1])
-                                {
-                                    _labels[x, y] = _labels[x, y - 1];
-                                }
-                                if (_labels[x, y] > _labels[x - 1, y])
-                                {
-                                    _labels[x, y] = _labels[x - 1, y];
-                                }
-                                if (_labels[x, y] > _labels[x + 1, y - 1])
-                                {
-                                    _labels[x, y] = _labels[x + 1, y - 1];
-                                }
-                                if (_labels[x, y] > _labels[x - 1, y + 1])
-                                {
-                                    _labels[x, y] = _labels[x - 1, y + 1];
-                                }
-                                if (_labels[x, y] > _labels[x + 1, y])
-                                {
-                                    _labels[x, y] = _labels[x + 1, y];
-                                }
-                                if (_labels[x, y] > _labels[x, y + 1])
-                                {
-                                    _labels[x, y] = _labels[x, y + 1];
-                                }
-                                if (_labels[x, y] > _labels[x + 1, y + 1])
-                                {
-                                    _labels[x, y] = _labels[x + 1, y + 1];
-                                }
-                                if (tmp != _labels[x, y])
-                                    changed = true;
-                            }
-                            dataPtrOriginal += nChan;
-                        }
-                        dataPtrOriginal += nChan * 2 + padding;
-                    }
-
-                    // Down->Up Right->Left
-                    dataPtrOriginal = originalPtr + (nChan * width) + (step * height);
-                    dataPtrOriginal -= nChan + step;
-                    for (int y = height - 2; y > 0; y--)
-                    {
-                        for (int x = width - 2; x > 0; x--)
-                        {
-
-                            uint tmp = _labels[x, y];
-                            if (_labels[x, y] != BASE_VALUE)
-                            {
-                                if (_labels[x, y] > _labels[x - 1, y - 1])
-                                {
-                                    _labels[x, y] = _labels[x - 1, y - 1];
-                                }
-                                if (_labels[x, y] > _labels[x, y - 1])
-                                {
-                                    _labels[x, y] = _labels[x, y - 1];
-                                }
-                                if (_labels[x, y] > _labels[x - 1, y])
-                                {
-                                    _labels[x, y] = _labels[x - 1, y];
-                                }
-                                if (_labels[x, y] > _labels[x + 1, y - 1])
-                                {
-                                    _labels[x, y] = _labels[x + 1, y - 1];
-                                }
-                                if (_labels[x, y] > _labels[x - 1, y + 1])
-                                {
-                                    _labels[x, y] = _labels[x - 1, y + 1];
-                                }
-                                if (_labels[x, y] > _labels[x + 1, y])
-                                {
-                                    _labels[x, y] = _labels[x + 1, y];
-                                }
-                                if (_labels[x, y] > _labels[x, y + 1])
-                                {
-                                    _labels[x, y] = _labels[x, y + 1];
-                                }
-                                if (_labels[x, y] > _labels[x + 1, y + 1])
-                                {
-                                    _labels[x, y] = _labels[x + 1, y + 1];
-                                }
-                                if (tmp != _labels[x, y])
-                                    changed = true;
-
-                            }
-                            dataPtrOriginal -= nChan;
-                        }
-                        dataPtrOriginal -= nChan * 2 + padding;
-                    }
-                }
-            }
-
         }
 
         private int GetLabelIndex(uint label)
@@ -285,18 +134,13 @@ namespace SS_OpenCV
                         newImagePointer[1] = (dataPtrOriginal + x2 * nChan + y2 * step)[1];
                         newImagePointer[2] = (dataPtrOriginal + x2 * nChan + y2 * step)[2];
 
-                        
-                        int i = 1;
                         if(newImagePointer[0] == _backgroundB && newImagePointer[1] == _backgroundG && newImagePointer[2] == _backgroundR)
                         {
-                            if (prevPixel == null) Console.WriteLine("ERROR null prev pixel");
-                            else
+                            if(prevPixel != null)
                             {
                                 newImagePointer[0] = prevPixel[0];
                                 newImagePointer[1] = prevPixel[1];
                                 newImagePointer[2] = prevPixel[2];
-                                i++;
-                                Console.WriteLine("III: " + i);
                             }
                         }
                         else
@@ -304,15 +148,13 @@ namespace SS_OpenCV
                             prevPixel = (dataPtrOriginal + x2 * nChan + y2 * step);
                         }
 
-                        
-
                         newImagePointer += nChanNew;
                     }
                     
                     newImagePointer += paddingNew;
                 }
 
-                newImage.Save("./imgs/piece" + partsID++ + ".png");
+               // newImage.Save("./imgs/piece" + partsID++ + ".png");
 
                 return newImage;
             }
@@ -339,11 +181,11 @@ namespace SS_OpenCV
             {
                 for (var x = 0; x < width; x++)
                 {
-                    if (_labels[x, y] == BASE_VALUE) continue;
+                    if (_labels[x, y] == BaseValue) continue;
                     
                     // TODO if a value is already set ignore / overwrite depending
                     
-                    if (_labels[x, y - 1] == BASE_VALUE && _labels[x - 1, y] == BASE_VALUE && _labels[x - 1, y + 2] == BASE_VALUE)
+                    if (_labels[x, y - 1] == BaseValue && _labels[x - 1, y] == BaseValue && _labels[x - 1, y + 2] == BaseValue)
                     {
                         // Found a top left corner
                         var index = GetLabelIndex(_labels[x, y]);
@@ -351,12 +193,12 @@ namespace SS_OpenCV
                         xTopLeft[index] = x;
                         yTopLeft[index] = y;
 
-                        Console.WriteLine("Label: " + _labels[x, y]);
-                        Console.WriteLine("Top Left X: " + x);
-                        Console.WriteLine("Top Left Y: " + y);
+                        //Console.WriteLine("Label: " + _labels[x, y]);
+                        //Console.WriteLine("Top Left X: " + x);
+                        //Console.WriteLine("Top Left Y: " + y);
 
                     }
-                    else if (_labels[x, y + 1] == BASE_VALUE && _labels[x + 1, y] == BASE_VALUE && _labels[x + 1, y - 2] == BASE_VALUE)
+                    else if (_labels[x, y + 1] == BaseValue && _labels[x + 1, y] == BaseValue && _labels[x + 1, y - 2] == BaseValue)
                     {
                         // Found a bottom right corner
                         var index = GetLabelIndex(_labels[x, y]);
@@ -364,11 +206,11 @@ namespace SS_OpenCV
                         xBottomRight[index] = x;
                         yBottomRight[index] = y;
 
-                        Console.WriteLine("Label: " + _labels[x, y]);
-                        Console.WriteLine("Bottom Right X: " + x);
-                        Console.WriteLine("Bottom Right Y: " + y);
+                        //Console.WriteLine("Label: " + _labels[x, y]);
+                        //Console.WriteLine("Bottom Right X: " + x);
+                        //Console.WriteLine("Bottom Right Y: " + y);
                     }
-                    else if (_labels[x, y - 1] == BASE_VALUE && _labels[x + 1, y] == BASE_VALUE && _labels[x - 2, y - 1] == BASE_VALUE)
+                    else if (_labels[x, y - 1] == BaseValue && _labels[x + 1, y] == BaseValue && _labels[x - 2, y - 1] == BaseValue)
                     {
                         // Found a top right corner (helper)
                         var index = GetLabelIndex(_labels[x, y]);
@@ -376,9 +218,9 @@ namespace SS_OpenCV
                         xHelper[index] = x;
                         yHelper[index] = y;
 
-                        Console.WriteLine("Label: " + _labels[x, y]);
-                        Console.WriteLine("Top Right X: " + x);
-                        Console.WriteLine("Top Right Y: " + y);
+                        //Console.WriteLine("Label: " + _labels[x, y]);
+                        //Console.WriteLine("Top Right X: " + x);
+                        //Console.WriteLine("Top Right Y: " + y);
                     }
                 }
             }
@@ -407,7 +249,7 @@ namespace SS_OpenCV
                     double adjacent = xHelper[i] - xTopLeft[i];
                     
                     rads = Math.Tanh(opposite / adjacent);
-                    Console.WriteLine("Angle:\t" + RadsToDegrees(rads));
+                    //Console.WriteLine("Angle:\t" + RadsToDegrees(rads));
                     
                     Pieces_angle.Add(RadsToDegrees(rads));
                 }
@@ -441,9 +283,9 @@ namespace SS_OpenCV
                 }
             }
             
-            Console.WriteLine("Piece1:\t" + bestPiece1);
-            Console.WriteLine("Piece2:\t" + bestPiece2);
-            Console.WriteLine("Side:\t" + bestSide);
+            //Console.WriteLine("Piece1:\t" + bestPiece1);
+            //Console.WriteLine("Piece2:\t" + bestPiece2);
+            //Console.WriteLine("Side:\t" + bestSide);
             
             var piece1 = _imagesPieces[bestPiece1];
             var piece2 = _imagesPieces[bestPiece2];
@@ -469,23 +311,20 @@ namespace SS_OpenCV
                     newPiece = PuzzleHelper.CombinePiecesLeftRight(piece1, piece2);
                     break;
                 default:
-                    Console.WriteLine("ERROR: Combining pieces");
+                    //Console.WriteLine("ERROR: Combining pieces");
                     newPiece = new Image<Bgr, byte>(0,0);
                     break;
             }
 
-            newPiece.Save("./imgs/part" + pieceID++ + ".png");
+            //newPiece.Save("./imgs/part" + pieceID++ + ".png");
             _imagesPieces.Add(newPiece);
         }
         
         public Image<Bgr, byte> GetFinalImage()
         {
-            // TODO Keep values between iterations
-            SideValues[,] bestDiffs;
-
             while (_imagesPieces.Count != 1)
             { 
-                bestDiffs = new SideValues[_imagesPieces.Count, _imagesPieces.Count];
+                var bestDiffs = new SideValues[_imagesPieces.Count, _imagesPieces.Count];
                 var currPos = 0;
                 foreach (var currPiece in _imagesPieces)
                 {
@@ -494,7 +333,7 @@ namespace SS_OpenCV
                     {
                         if (currPos < nextPos)
                         {
-                            Console.WriteLine("Best Side: " + currPos + " vs: " + nextPos);
+                            //Console.WriteLine("Best Side: " + currPos + " vs: " + nextPos);
                             
                             var bestDiff = PuzzleHelper.CompareSides(currPiece, nextPiece);
                             bestDiffs[currPos, nextPos] = bestDiff;
