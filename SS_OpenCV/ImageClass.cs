@@ -1936,7 +1936,7 @@ namespace SS_OpenCV
             double[] p = new double[hist.Length];
             double[] pi = new double[hist.Length];
 
-            double q1 = 0, q2 = 1, u1 = 0, u2 = 0;
+            double q1 = 0, /*q2 = 1,*/ u1 = 0, u2 = 0;
 
             for (int i = 0; i < hist.Length; i++)
             {

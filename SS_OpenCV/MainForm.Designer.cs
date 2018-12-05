@@ -39,6 +39,13 @@
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.colorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.negativeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.grayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redChannelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.brightContrastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.blakcAndWhiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.blackAndWhiteOtsuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.transformsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.translationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rotationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,20 +62,14 @@
             this.medianToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoZoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.histogramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.histogramRGBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.histogramBWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.puzzleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.evalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.histogramRGBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.negativeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.grayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.redChannelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.brightContrastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.blakcAndWhiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.blackAndWhiteOtsuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.colorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ImageViewer = new System.Windows.Forms.PictureBox();
-            this.puzzleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.robertsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ImageViewer)).BeginInit();
@@ -159,6 +160,61 @@
             this.imageToolStripMenuItem.Name = "imageToolStripMenuItem";
             this.imageToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
             this.imageToolStripMenuItem.Text = "Image";
+            // 
+            // colorToolStripMenuItem
+            // 
+            this.colorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.negativeToolStripMenuItem,
+            this.grayToolStripMenuItem,
+            this.redChannelToolStripMenuItem,
+            this.brightContrastToolStripMenuItem,
+            this.blakcAndWhiteToolStripMenuItem,
+            this.blackAndWhiteOtsuToolStripMenuItem});
+            this.colorToolStripMenuItem.Name = "colorToolStripMenuItem";
+            this.colorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.colorToolStripMenuItem.Text = "Color";
+            // 
+            // negativeToolStripMenuItem
+            // 
+            this.negativeToolStripMenuItem.Name = "negativeToolStripMenuItem";
+            this.negativeToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.negativeToolStripMenuItem.Text = "Negative";
+            this.negativeToolStripMenuItem.Click += new System.EventHandler(this.negativeToolStripMenuItem_Click);
+            // 
+            // grayToolStripMenuItem
+            // 
+            this.grayToolStripMenuItem.Name = "grayToolStripMenuItem";
+            this.grayToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.grayToolStripMenuItem.Text = "Gray";
+            this.grayToolStripMenuItem.Click += new System.EventHandler(this.grayToolStripMenuItem_Click);
+            // 
+            // redChannelToolStripMenuItem
+            // 
+            this.redChannelToolStripMenuItem.Name = "redChannelToolStripMenuItem";
+            this.redChannelToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.redChannelToolStripMenuItem.Text = "Red Channel";
+            this.redChannelToolStripMenuItem.Click += new System.EventHandler(this.redChannelToolStripMenuItem_Click);
+            // 
+            // brightContrastToolStripMenuItem
+            // 
+            this.brightContrastToolStripMenuItem.Name = "brightContrastToolStripMenuItem";
+            this.brightContrastToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.brightContrastToolStripMenuItem.Text = "Bright Contrast";
+            this.brightContrastToolStripMenuItem.Click += new System.EventHandler(this.brightContrastToolStripMenuItem_Click);
+            // 
+            // blakcAndWhiteToolStripMenuItem
+            // 
+            this.blakcAndWhiteToolStripMenuItem.Name = "blakcAndWhiteToolStripMenuItem";
+            this.blakcAndWhiteToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.blakcAndWhiteToolStripMenuItem.Text = "Blakc and White";
+            this.blakcAndWhiteToolStripMenuItem.Click += new System.EventHandler(this.blakcAndWhiteToolStripMenuItem_Click);
+            // 
+            // blackAndWhiteOtsuToolStripMenuItem
+            // 
+            this.blackAndWhiteOtsuToolStripMenuItem.Name = "blackAndWhiteOtsuToolStripMenuItem";
+            this.blackAndWhiteOtsuToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.blackAndWhiteOtsuToolStripMenuItem.Text = "Black and White Otsu";
+            this.blackAndWhiteOtsuToolStripMenuItem.Click += new System.EventHandler(this.blackAndWhiteOtsuToolStripMenuItem_Click);
             // 
             // transformsToolStripMenuItem
             // 
@@ -258,7 +314,8 @@
             // filtersToolStripMenuItem
             // 
             this.filtersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.medianToolStripMenuItem});
+            this.medianToolStripMenuItem,
+            this.robertsToolStripMenuItem});
             this.filtersToolStripMenuItem.Name = "filtersToolStripMenuItem";
             this.filtersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.filtersToolStripMenuItem.Text = "Filters";
@@ -285,12 +342,26 @@
             this.histogramToolStripMenuItem.Text = "Histogram_All";
             this.histogramToolStripMenuItem.Click += new System.EventHandler(this.histogramToolStripMenuItem_Click);
             // 
+            // histogramRGBToolStripMenuItem
+            // 
+            this.histogramRGBToolStripMenuItem.Name = "histogramRGBToolStripMenuItem";
+            this.histogramRGBToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.histogramRGBToolStripMenuItem.Text = "Histogram_RGB";
+            this.histogramRGBToolStripMenuItem.Click += new System.EventHandler(this.histogramRGBToolStripMenuItem_Click);
+            // 
             // histogramBWToolStripMenuItem
             // 
             this.histogramBWToolStripMenuItem.Name = "histogramBWToolStripMenuItem";
             this.histogramBWToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.histogramBWToolStripMenuItem.Text = "Histogram_Gray";
             this.histogramBWToolStripMenuItem.Click += new System.EventHandler(this.histogramBWToolStripMenuItem_Click);
+            // 
+            // puzzleToolStripMenuItem
+            // 
+            this.puzzleToolStripMenuItem.Name = "puzzleToolStripMenuItem";
+            this.puzzleToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.puzzleToolStripMenuItem.Text = "Puzzle";
+            this.puzzleToolStripMenuItem.Click += new System.EventHandler(this.puzzleToolStripMenuItem_Click);
             // 
             // autoresToolStripMenuItem
             // 
@@ -317,68 +388,6 @@
             this.panel1.Size = new System.Drawing.Size(792, 491);
             this.panel1.TabIndex = 6;
             // 
-            // histogramRGBToolStripMenuItem
-            // 
-            this.histogramRGBToolStripMenuItem.Name = "histogramRGBToolStripMenuItem";
-            this.histogramRGBToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.histogramRGBToolStripMenuItem.Text = "Histogram_RGB";
-            this.histogramRGBToolStripMenuItem.Click += new System.EventHandler(this.histogramRGBToolStripMenuItem_Click);
-            // 
-            // negativeToolStripMenuItem
-            // 
-            this.negativeToolStripMenuItem.Name = "negativeToolStripMenuItem";
-            this.negativeToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.negativeToolStripMenuItem.Text = "Negative";
-            this.negativeToolStripMenuItem.Click += new System.EventHandler(this.negativeToolStripMenuItem_Click);
-            // 
-            // grayToolStripMenuItem
-            // 
-            this.grayToolStripMenuItem.Name = "grayToolStripMenuItem";
-            this.grayToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.grayToolStripMenuItem.Text = "Gray";
-            this.grayToolStripMenuItem.Click += new System.EventHandler(this.grayToolStripMenuItem_Click);
-            // 
-            // redChannelToolStripMenuItem
-            // 
-            this.redChannelToolStripMenuItem.Name = "redChannelToolStripMenuItem";
-            this.redChannelToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.redChannelToolStripMenuItem.Text = "Red Channel";
-            this.redChannelToolStripMenuItem.Click += new System.EventHandler(this.redChannelToolStripMenuItem_Click);
-            // 
-            // brightContrastToolStripMenuItem
-            // 
-            this.brightContrastToolStripMenuItem.Name = "brightContrastToolStripMenuItem";
-            this.brightContrastToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.brightContrastToolStripMenuItem.Text = "Bright Contrast";
-            this.brightContrastToolStripMenuItem.Click += new System.EventHandler(this.brightContrastToolStripMenuItem_Click);
-            // 
-            // blakcAndWhiteToolStripMenuItem
-            // 
-            this.blakcAndWhiteToolStripMenuItem.Name = "blakcAndWhiteToolStripMenuItem";
-            this.blakcAndWhiteToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.blakcAndWhiteToolStripMenuItem.Text = "Blakc and White";
-            this.blakcAndWhiteToolStripMenuItem.Click += new System.EventHandler(this.blakcAndWhiteToolStripMenuItem_Click);
-            // 
-            // blackAndWhiteOtsuToolStripMenuItem
-            // 
-            this.blackAndWhiteOtsuToolStripMenuItem.Name = "blackAndWhiteOtsuToolStripMenuItem";
-            this.blackAndWhiteOtsuToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.blackAndWhiteOtsuToolStripMenuItem.Text = "Black and White Otsu";
-            this.blackAndWhiteOtsuToolStripMenuItem.Click += new System.EventHandler(this.blackAndWhiteOtsuToolStripMenuItem_Click);
-            // 
-            // colorToolStripMenuItem
-            // 
-            this.colorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.negativeToolStripMenuItem,
-            this.grayToolStripMenuItem,
-            this.redChannelToolStripMenuItem,
-            this.brightContrastToolStripMenuItem,
-            this.blakcAndWhiteToolStripMenuItem,
-            this.blackAndWhiteOtsuToolStripMenuItem});
-            this.colorToolStripMenuItem.Name = "colorToolStripMenuItem";
-            this.colorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.colorToolStripMenuItem.Text = "Color";
-            // 
             // ImageViewer
             // 
             this.ImageViewer.Location = new System.Drawing.Point(0, 0);
@@ -390,12 +399,12 @@
             this.ImageViewer.TabStop = false;
             this.ImageViewer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ImageViewer_MouseClick);
             // 
-            // puzzleToolStripMenuItem
+            // robertsToolStripMenuItem
             // 
-            this.puzzleToolStripMenuItem.Name = "puzzleToolStripMenuItem";
-            this.puzzleToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.puzzleToolStripMenuItem.Text = "Puzzle";
-            this.puzzleToolStripMenuItem.Click += new System.EventHandler(this.puzzleToolStripMenuItem_Click);
+            this.robertsToolStripMenuItem.Name = "robertsToolStripMenuItem";
+            this.robertsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.robertsToolStripMenuItem.Text = "Roberts";
+            this.robertsToolStripMenuItem.Click += new System.EventHandler(this.robertsToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -461,6 +470,7 @@
         private System.Windows.Forms.ToolStripMenuItem blackAndWhiteOtsuToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem puzzleToolStripMenuItem;
         private System.Windows.Forms.PictureBox ImageViewer;
+        private System.Windows.Forms.ToolStripMenuItem robertsToolStripMenuItem;
     }
 }
 

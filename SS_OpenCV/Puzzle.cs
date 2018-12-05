@@ -33,8 +33,8 @@ namespace SS_OpenCV
         private const uint BaseValue = 0;
 
         // TODO for testing
-        private int pieceID;
-        private int partsID;
+        //private int pieceID;
+        //private int partsID;
         
         private readonly int _backgroundB;
         private readonly int _backgroundG;
@@ -57,8 +57,8 @@ namespace SS_OpenCV
                 _backgroundR = dataPtrOriginal[2];
             }
 
-            pieceID = 0;
-            partsID = 0;
+            //pieceID = 0;
+            //partsID = 0;
 
             _labels = PuzzleClassic.getLabelsClassic(img);
         }
