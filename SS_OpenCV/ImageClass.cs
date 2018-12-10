@@ -1729,7 +1729,7 @@ namespace SS_OpenCV
             }
         }
 
-        public static long[] Histogram_Gray(Emgu.CV.Image<Bgr, byte> img)
+        public static int[] Histogram_Gray(Emgu.CV.Image<Bgr, byte> img)
         {
             unsafe
             {
@@ -1743,7 +1743,7 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                long[] hist = new long[256];
+                int[] hist = new int[256];
 
                 for (int i = 0; i < 256; i++)
                 {
@@ -1773,7 +1773,7 @@ namespace SS_OpenCV
             }
         }
 
-        public static long[,] Histogram_RGB(Emgu.CV.Image<Bgr, byte> img)
+        public static int[,] Histogram_RGB(Emgu.CV.Image<Bgr, byte> img)
         {
             unsafe
             {
@@ -1787,7 +1787,7 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                long[,] hist = new long[3, 256];
+                int[,] hist = new int[3, 256];
                 for (int j = 0; j < 3; j++)
                     for (int i = 0; i < 256; i++)
                     {
@@ -1821,7 +1821,7 @@ namespace SS_OpenCV
             }
         }
 
-        public static long[,] Histogram_All(Emgu.CV.Image<Bgr, byte> img)
+        public static int[,] Histogram_All(Emgu.CV.Image<Bgr, byte> img)
         {
             unsafe
             {
@@ -1835,7 +1835,7 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                long[,] hist = new long[4, 256];
+                int[,] hist = new int[4, 256];
                 for (int j = 0; j < 4; j++)
                     for (int i = 0; i < 256; i++)
                     {
@@ -1929,7 +1929,7 @@ namespace SS_OpenCV
         {
             double pixel_numb = img.Width * img.Height;
 
-            long[] hist = Histogram_Gray(img);
+            int[] hist = Histogram_Gray(img);
 
             double[] var = new double[hist.Length];
 

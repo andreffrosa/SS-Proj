@@ -198,22 +198,6 @@ C:/Users/Acer/Desktop/FCT/4º Ano/1º Semestre/SS/Praticas/TP1/ss_project/SS_Ope
 /home/david/Dropbox/SS/lab/windows/Project/SS_OpenCV/obj/Debug/SS_OpenCV.csproj.CopyComplete
 /home/david/Dropbox/SS/lab/windows/Project/SS_OpenCV/obj/Debug/SS_OpenCV.exe
 /home/david/Dropbox/SS/lab/windows/Project/SS_OpenCV/obj/Debug/SS_OpenCV.pdb
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.AuthorsForm.resources
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.DoubleInputBox.resources
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.HistogramRGB.resources
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.HistogramGray.resources
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.Histogram.resources
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.InputBox.resources
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.MainForm.resources
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.Properties.Resources.resources
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.GenerateResource.cache
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CoreCompileInputs.cache
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.exe
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
-E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.exe.config
-E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.exe
-E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.pdb
-E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CopyComplete
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\bin\Debug\SS_OpenCV.exe.config
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\bin\Debug\SS_OpenCV.exe
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\bin\Debug\SS_OpenCV.pdb
@@ -231,4 +215,24 @@ C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.cspro
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CopyComplete
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.exe
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
+<<<<<<< HEAD
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.nonUniformMeanFilter.resources
+=======
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csprojAssemblyReference.cache
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.AuthorsForm.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.DoubleInputBox.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.HistogramRGB.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.HistogramGray.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.Histogram.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.InputBox.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.MainForm.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.Properties.Resources.resources
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.GenerateResource.cache
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CoreCompileInputs.cache
+E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.exe.config
+E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.exe
+E:\Project\SS_OpenCV\bin\Debug\SS_OpenCV.pdb
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CopyComplete
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.exe
+E:\Project\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
+>>>>>>> 9f5362dade2408f0570b3593215c0d66114536b9

@@ -13,7 +13,7 @@ namespace SS_OpenCV
 {
     public partial class Histogram : Form
     {
-        public Histogram(long[,] array)
+        public Histogram(int[,] array)
         {
             InitializeComponent();
            
