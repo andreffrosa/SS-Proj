@@ -640,7 +640,35 @@ namespace SS_OpenCV
 
         private void nonUniformToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            float[,] matrix;
+            nonUniformMeanFilter form = new nonUniformMeanFilter(out matrix);
+            form.ShowDialog();
+
+            float matrixWeight = 0;
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    matrixWeight += matrix[i, j];
+                    Console.Write(matrix[i, j] + " ");
+                }
+                Console.WriteLine("");
+            }
+
+            ImageClass.NonUniform(img, img.Copy(), matrix, matrixWeight);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
             
+            Cursor = Cursors.Default; // normal cursor 
         }
 
         private void sobelToolStripMenuItem_Click(object sender, EventArgs e)

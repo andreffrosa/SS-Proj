@@ -2459,6 +2459,7 @@ namespace SS_OpenCV
 
                 // Compute the mean for the Top Right Corner
                 dataPtr = (byte*)img.MIplImage.imageData.ToPointer() + (width - (k + 1)) * nChan;
+                dataCopyPtr = (byte*)m.imageData.ToPointer() + (width - 1) * nChan; // Pointer to the original image
                 for (j = 0; j < k + 1; j++)
                 {
                     for (i = width - (k + 1); i < width; i++)
@@ -2466,19 +2467,19 @@ namespace SS_OpenCV
                         area = integral_img[j + k, width - 1, 0] - integral_img[j + k, i - k - 1, 0] 
                             + (integral_img[j + k, width - 1, 0] - integral_img[j + k, width - 2, 0]) * ((ulong)(i + k - (width - 1))) 
                             + (integral_img[0, width - 1, 0] - integral_img[0, i - k - 1, 0]) * ((ulong)(k - j)) 
-                            + integral_img[0, width - 1, 0] * ((ulong)((i + k - (width - 1)) * (k - j)));
+                            + dataCopyPtr[0] * ((ulong)((i + k - (width - 1)) * (k - j)));
                         dataPtr[0] = (byte)Math.Round(area / (double)(size * size));
 
                         area = integral_img[j + k, width - 1, 1] - integral_img[j + k, i - k - 1, 1]
                             + (integral_img[j + k, width - 1, 1] - integral_img[j + k, width - 2, 1]) * ((ulong)(i + k - (width - 1)))
                             + (integral_img[0, width - 1, 1] - integral_img[0, i - k - 1, 1]) * ((ulong)(k - j))
-                            + integral_img[0, width - 1, 1] * ((ulong)((i + k - (width - 1)) * (k - j)));
+                            + dataCopyPtr[1] * ((ulong)((i + k - (width - 1)) * (k - j)));
                         dataPtr[1] = (byte)Math.Round(area / (double)(size * size));
 
                         area = integral_img[j + k, width - 1, 2] - integral_img[j + k, i - k - 1, 2]
                             + (integral_img[j + k, width - 1, 2] - integral_img[j + k, width - 2, 2]) * ((ulong)(i + k - (width - 1)))
                             + (integral_img[0, width - 1, 2] - integral_img[0, i - k - 1, 2]) * ((ulong)(k - j))
-                            + integral_img[0, width - 1, 2] * ((ulong)((i + k - (width - 1)) * (k - j)));
+                            + dataCopyPtr[2] * ((ulong)((i + k - (width - 1)) * (k - j)));
                         dataPtr[2] = (byte)Math.Round(area / (double)(size * size));
 
                         dataPtr += nChan;
@@ -2510,17 +2511,24 @@ namespace SS_OpenCV
 
                 // Compute the mean for the Bottom Left Corner
                 dataPtr = (byte*)img.MIplImage.imageData.ToPointer() + (height - (k + 1)) *step;
+                dataCopyPtr = (byte*)m.imageData.ToPointer() + (height - 1) * step; // Pointer to the original image
                 for (j = height - (k+1); j < height; j++)
                 {
                     for (i = 0; i < k + 1; i++)
                     {
-                        area = integral_img[height - 1, i + k, 0] - integral_img[j - k - 1, i + k, 0] + (integral_img[height - 1, 0, 0] - integral_img[j - k - 1, 0, 0]) * ((ulong)(k - i)) + integral_img[height-1, 0, 0] * ((ulong)((k - i)*(j + k - (height - 1))));
+                        area = integral_img[height - 1, i + k, 0] - integral_img[j - k - 1, i + k, 0] 
+                            + (integral_img[height - 1, 0, 0] - integral_img[j - k - 1, 0, 0]) * ((ulong)(k - i)) 
+                            + dataCopyPtr[0] * ((ulong)((k - i)*(j + k - (height - 1))));
                         dataPtr[0] = (byte)Math.Round(area / (double)(size * size));
 
-                        area = integral_img[height - 1, i + k, 1] - integral_img[j - k - 1, i + k, 1] + (integral_img[height - 1, 0, 1] - integral_img[j - k - 1, 0, 1]) * ((ulong)(k - i)) + integral_img[height - 1, 0, 1] * ((ulong)((k - i) * (j + k - (height - 1))));
+                        area = integral_img[height - 1, i + k, 1] - integral_img[j - k - 1, i + k, 1] 
+                            + (integral_img[height - 1, 0, 1] - integral_img[j - k - 1, 0, 1]) * ((ulong)(k - i)) 
+                            + dataCopyPtr[1] * ((ulong)((k - i) * (j + k - (height - 1))));
                         dataPtr[1] = (byte)Math.Round(area / (double)(size * size));
 
-                        area = integral_img[height - 1, i + k, 2] - integral_img[j - k - 1, i + k, 2] + (integral_img[height - 1, 0, 2] - integral_img[j - k - 1, 0, 2]) * ((ulong)(k - i)) + integral_img[height - 1, 0, 2] * ((ulong)((k - i) * (j + k - (height - 1))));
+                        area = integral_img[height - 1, i + k, 2] - integral_img[j - k - 1, i + k, 2] 
+                            + (integral_img[height - 1, 0, 2] - integral_img[j - k - 1, 0, 2]) * ((ulong)(k - i)) 
+                            + dataCopyPtr[2] * ((ulong)((k - i) * (j + k - (height - 1))));
                         dataPtr[2] = (byte)Math.Round(area / (double)(size * size));
 
                         dataPtr += nChan;
@@ -2529,7 +2537,7 @@ namespace SS_OpenCV
                 }
 
                 // Compute the mean for the Bottom
-                dataPtr = (byte*)img.MIplImage.imageData.ToPointer() + (k + 1) * nChan + (height - (k+1)) * step;
+                dataPtr = (byte*)img.MIplImage.imageData.ToPointer() + (k + 1) * nChan + (height - (k + 1)) * step;
                 for (j = height - (k + 1); j < height; j++)
                 {
                     for (i = k + 1; i < width - (k + 1); i++)
@@ -2550,6 +2558,7 @@ namespace SS_OpenCV
 
                 // Compute the mean for the Bottom Right Corner
                 dataPtr = (byte*)img.MIplImage.imageData.ToPointer() + (width - (k + 1)) * nChan + (height - (k + 1)) * step;
+                dataCopyPtr = (byte*)m.imageData.ToPointer() + (width - (k + 1)) * nChan + (height - (k + 1)) * step; // Pointer to the original image
                 for (j = height - (k + 1); j < height; j++)
                 {
                     for (i = width - (k + 1); i < width; i++)
@@ -2557,19 +2566,19 @@ namespace SS_OpenCV
                         area = integral_img[height - 1, width - 1, 0] - integral_img[j - k - 1, width - 1, 0] + integral_img[j - k - 1, i - k - 1, 0] - integral_img[height - 1, i - k - 1, 0]
                             + (integral_img[height - 1, width - 1, 0] - integral_img[height - 1, i - k - 1, 0]) * ((ulong)(j + k - (height - 1))) 
                             + (integral_img[height - 1, width - 1, 0] - integral_img[height - 1, width - 2, 0] - integral_img[j - k - 1, width - 1, 0]) * ((ulong)(i + k - (width - 1)))
-                            + integral_img[height - 1, width - 1, 0] * ((ulong)((i + k - (width - 1)) * (j + k - (height - 1))));
+                            + dataCopyPtr[0] * ((ulong)((i + k - (width - 1)) * (j + k - (height - 1))));
                         dataPtr[0] = (byte)Math.Round(area / (double)(size * size));
 
                         area = integral_img[height - 1, width - 1, 1] - integral_img[j - k - 1, width - 1, 1] + integral_img[j - k - 1, i - k - 1, 1] - integral_img[height - 1, i - k - 1, 1]
                             + (integral_img[height - 1, width - 1, 1] - integral_img[height - 1, i - k - 1, 1]) * ((ulong)(j + k - (height - 1)))
                             + (integral_img[height - 1, width - 1, 1] - integral_img[height - 1, width - 2, 1] - integral_img[j - k - 1, width - 1, 1]) * ((ulong)(i + k - (width - 1)))
-                            + integral_img[height - 1, width - 1, 1] * ((ulong)((i + k - (width - 1)) * (j + k - (height - 1))));
+                            + dataCopyPtr[1] * ((ulong)((i + k - (width - 1)) * (j + k - (height - 1))));
                         dataPtr[1] = (byte)Math.Round(area / (double)(size * size));
 
                         area = integral_img[height - 1, width - 1, 2] - integral_img[j - k - 1, width - 1, 2] + integral_img[j - k - 1, i - k - 1, 2] - integral_img[height - 1, i - k - 1, 2]
                             + (integral_img[height - 1, width - 1, 2] - integral_img[height - 1, i - k - 1, 2]) * ((ulong)(j + k - (height - 1)))
                             + (integral_img[height - 1, width - 1, 2] - integral_img[height - 1, width - 2, 2] - integral_img[j - k - 1, width - 1, 2]) * ((ulong)(i + k - (width - 1)))
-                            + integral_img[height - 1, width - 1, 2] * ((ulong)((i + k - (width - 1)) * (j + k - (height - 1))));
+                            + dataCopyPtr[2] * ((ulong)((i + k - (width - 1)) * (j + k - (height - 1))));
                         dataPtr[2] = (byte)Math.Round(area / (double)(size * size));
 
                         dataPtr += nChan;

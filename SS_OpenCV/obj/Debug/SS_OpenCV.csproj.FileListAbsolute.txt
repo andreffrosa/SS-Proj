@@ -231,3 +231,4 @@ C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.cspro
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.CopyComplete
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.exe
 C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
+C:\Users\André\Desktop\Escola\SS\ss_project\SS_OpenCV\obj\Debug\SS_OpenCV.nonUniformMeanFilter.resources
