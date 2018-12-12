@@ -33,7 +33,7 @@ namespace SS_OpenCV
 
         private const uint BaseValue = 0;
 
-        // TODO for testing
+        //for testing
         //private int pieceID;
         //private int partsID;
         
@@ -61,7 +61,7 @@ namespace SS_OpenCV
             //pieceID = 0;
             //partsID = 0;
 
-            _labels = PuzzleClassic.getLabelsClassic(img);
+            _labels = PuzzleClassic.GetLabelsClassic(img);
         }
 
         private static int RadsToDegrees(double rads)
@@ -193,11 +193,6 @@ namespace SS_OpenCV
 
                         xTopLeft[index] = x;
                         yTopLeft[index] = y;
-
-                        //Console.WriteLine("Label: " + _labels[x, y]);
-                        //Console.WriteLine("Top Left X: " + x);
-                        //Console.WriteLine("Top Left Y: " + y);
-
                     }
                     else if (_labels[x, y + 1] == BaseValue && _labels[x + 1, y] == BaseValue && _labels[x + 1, y - 2] == BaseValue)
                     {
@@ -206,10 +201,6 @@ namespace SS_OpenCV
                         
                         xBottomRight[index] = x;
                         yBottomRight[index] = y;
-
-                        //Console.WriteLine("Label: " + _labels[x, y]);
-                        //Console.WriteLine("Bottom Right X: " + x);
-                        //Console.WriteLine("Bottom Right Y: " + y);
                     }
                     else if (_labels[x, y - 1] == BaseValue && _labels[x + 1, y] == BaseValue && _labels[x - 2, y - 1] == BaseValue)
                     {
@@ -218,10 +209,6 @@ namespace SS_OpenCV
 
                         xHelper[index] = x;
                         yHelper[index] = y;
-
-                        //Console.WriteLine("Label: " + _labels[x, y]);
-                        //Console.WriteLine("Top Right X: " + x);
-                        //Console.WriteLine("Top Right Y: " + y);
                     }
                 }
             }
@@ -229,8 +216,8 @@ namespace SS_OpenCV
             for (var i = 0; i < _currLabelIndex; i++)
             {
                 var pieceVector = new int[4];
-                pieceVector[0] = xTopLeft[i];   // x- Top-Left 
-                pieceVector[1] = yTopLeft[i];  // y- Top-Left
+                pieceVector[0] = xTopLeft[i];     // x- Top-Left 
+                pieceVector[1] = yTopLeft[i];     // y- Top-Left
                 pieceVector[2] = xBottomRight[i]; // x- Bottom-Right
                 pieceVector[3] = yBottomRight[i]; // y- Bottom-Right
                 
@@ -245,12 +232,11 @@ namespace SS_OpenCV
                 }
                 else
                 {
-                    //Calculate Angle
+                    // Calculate Angle
                     double opposite = yTopLeft[i] - yHelper[i];
                     double adjacent = xHelper[i] - xTopLeft[i];
                     
                     rads = Math.Tanh(opposite / adjacent);
-                    //Console.WriteLine("Angle:\t" + RadsToDegrees(rads));
                     
                     Pieces_angle.Add(RadsToDegrees(rads));
                 }
@@ -286,7 +272,7 @@ namespace SS_OpenCV
         private SideValues[,] CopyMatrix(SideValues[,] bestDiffs, int iToRemove, int jToRemove)
         {
             // Create new copied matrix without specified elements
-            SideValues[,] toReturn = new SideValues[bestDiffs.GetLength(0) - 1, bestDiffs.GetLength(0) - 1];
+            var toReturn = new SideValues[bestDiffs.GetLength(0) - 1, bestDiffs.GetLength(0) - 1];
 
             for(int oldI = 0, newI = 0; oldI < bestDiffs.GetLength(0); oldI++)
             {
@@ -304,9 +290,9 @@ namespace SS_OpenCV
                 newI++;
             }
 
-            Image<Bgr, byte> newImage = _imagesPieces[_imagesPieces.Count - 1];
+            var newImage = _imagesPieces[_imagesPieces.Count - 1];
 
-            int pieceIndex = 0;
+            var pieceIndex = 0;
             foreach (var piece in _imagesPieces)
             {
                 if (pieceIndex != _imagesPieces.Count - 1)
@@ -318,23 +304,12 @@ namespace SS_OpenCV
             return toReturn;
         }
 
-        private Image<Bgr, byte> CombinePieces(SideValues[,] bestDiffs, int bestPiece1, int bestPiece2)
+        private Image<Bgr, byte> CombinePieces(SideValues[,] topPoints, int bestPiece1, int bestPiece2)
         {
-
-            int bestSide = bestDiffs[bestPiece1, bestPiece2].Side;
-
-            /*//Console.WriteLine("Piece1:\t" + bestPiece1);
-            //Console.WriteLine("Piece2:\t" + bestPiece2);
-            //Console.WriteLine("Side:\t" + bestSide);*/
-            
-            //Console.WriteLine("Piece1:\t" + bestPiece1);
-            //Console.WriteLine("Piece2:\t" + bestPiece2);
-            //Console.WriteLine("Side:\t" + bestSide);
-            
+            var bestSide = topPoints[bestPiece1, bestPiece2].Side;
+          
             var piece1 = _imagesPieces[bestPiece1];
             var piece2 = _imagesPieces[bestPiece2];
-
-
 
             // Combine Pieces
             Image<Bgr, byte> newPiece;
@@ -354,7 +329,7 @@ namespace SS_OpenCV
                     newPiece = PuzzleHelper.CombinePiecesLeftRight(piece1, piece2);
                     break;
                 default:
-                    //Console.WriteLine("ERROR: Combining pieces");
+                    Console.WriteLine("ERROR: Combining pieces");
                     newPiece = new Image<Bgr, byte>(0,0);
                     break;
             }
@@ -366,8 +341,7 @@ namespace SS_OpenCV
         
         public Image<Bgr, byte> GetFinalImage()
         {
-            // TODO Keep values between iterations
-            SideValues[,] bestDiffs = new SideValues[_imagesPieces.Count, _imagesPieces.Count];
+            var topPoints = new SideValues[_imagesPieces.Count, _imagesPieces.Count];
 
             int bestI = 0, bestJ = 0;
 
@@ -380,11 +354,9 @@ namespace SS_OpenCV
                 {
                     if (currPos > nextPos)
                     {
-                        // ////Console.WriteLine("Best Side: " + currPos + " vs: " + nextPos);
+                        topPoints[currPos, nextPos] = PuzzleHelper.CompareSides(currPiece, nextPiece);
 
-                        bestDiffs[currPos, nextPos] = PuzzleHelper.CompareSides(currPiece, nextPiece);
-
-                        if (bestDiffs[currPos, nextPos].Points > bestDiffs[bestI, bestJ].Points)
+                        if (topPoints[currPos, nextPos].Points > topPoints[bestI, bestJ].Points)
                         {
                             bestI = currPos;
                             bestJ = nextPos;
@@ -402,38 +374,16 @@ namespace SS_OpenCV
                 var piece1 = _imagesPieces[bestI];
                 var piece2 = _imagesPieces[bestJ];
 
-                Image<Bgr, byte> newPiece = CombinePieces(bestDiffs, bestI, bestJ);
+                var newPiece = CombinePieces(topPoints, bestI, bestJ);
 
                 _imagesPieces.Remove(piece1);
                 _imagesPieces.Remove(piece2);
 
                 _imagesPieces.Add(newPiece);
 
-                ////Console.WriteLine("MATRIX BEFORE//////////////////////////");
-                for (int i = 0; i < bestDiffs.GetLength(0); i++)
-                {
-                    for (int j = 0; j < bestDiffs.GetLength(1); j++)
-                    {
-                        ////Console.Write(bestDiffs[i, j].Points + "\t");
-                    }
-                    //Console.WriteLine("");
-                }
-                //Console.WriteLine("END //////////////////////////");
+                topPoints = CopyMatrix(topPoints, bestI, bestJ);
 
-                bestDiffs = CopyMatrix(bestDiffs, bestI, bestJ);
-
-                //Console.WriteLine("MATRIX //////////////////////////");
-                for(int i = 0; i < bestDiffs.GetLength(0); i++)
-                {
-                    for(int j = 0; j < bestDiffs.GetLength(1); j++)
-                    {
-                        //Console.Write(bestDiffs[i, j].Points + "\t");
-                    }
-                    //Console.WriteLine("");
-                }
-                //Console.WriteLine("END //////////////////////////");
-
-                int[] res = FindBestStoredValueIndexes(bestDiffs);
+                var res = FindBestStoredValueIndexes(topPoints);
 
                 bestI = res[0];
                 bestJ = res[1];

@@ -636,7 +636,7 @@ namespace SS_OpenCV
         {
             unsafe
             {
-                //Test.Mean_solutionB(img, imgCopy);
+                // TODO
             }
         }
 

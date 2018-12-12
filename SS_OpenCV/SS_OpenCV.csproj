@@ -136,7 +136,6 @@
     <Compile Include="Puzzle.cs" />
     <Compile Include="PuzzleClassic.cs" />
     <Compile Include="PuzzleHelper.cs" />
-    <Compile Include="Test.cs" />
     <EmbeddedResource Include="AuthorsForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>AuthorsForm.cs</DependentUpon>

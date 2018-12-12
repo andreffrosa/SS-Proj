@@ -9,29 +9,57 @@ namespace SS_OpenCV
 {
     public static class PuzzleClassic
     {
-        public static uint computeClosure(Dictionary<uint, uint> equivalence_table, uint key)
+        private static uint ComputeClosure(IDictionary<uint, uint> equivalenceTable, uint key)
         {
-            LinkedList<uint> path = new LinkedList<uint>();
+            var path = new LinkedList<uint>();
 
-            uint closure = key, value, current_key = key;
-            while (equivalence_table.TryGetValue(current_key, out value))
+            uint closure = key, currentKey = key;
+            while (equivalenceTable.TryGetValue(currentKey, out var value))
             {
                 // Already has an entry with the same key
-                path.AddFirst(current_key);
+                path.AddFirst(currentKey);
                 closure = value;
-                current_key = value;
+                currentKey = value;
             }
 
-            foreach (uint k in path)
+            foreach (var k in path)
             {
-                equivalence_table[k] = closure;
+                equivalenceTable[k] = closure;
             }
 
             return closure;
         }
 
 
-    public static uint[,] getLabelsClassic(Image<Bgr, byte> img)
+        private static uint InsertEquivalence(IDictionary<uint, uint> equivalenceTable, uint key, uint value)
+        {
+            if (equivalenceTable.TryGetValue(key, out var old))
+            {
+                // Already has an entry with the same key
+                if (value < old)
+                {
+                    var closure = ComputeClosure(equivalenceTable, value);
+                    equivalenceTable[key] = closure;
+                    InsertEquivalence(equivalenceTable, old, closure);
+                    return closure;
+                }
+                else if (old < value)
+                {
+                    InsertEquivalence(equivalenceTable, value, old);
+                    return old;
+                }
+
+                return old;
+            }
+            else
+            {
+                var closure = ComputeClosure(equivalenceTable, value);
+                equivalenceTable.Add(key, closure);
+                return closure;
+            }
+        }
+
+        public static uint[,] GetLabelsClassic(Image<Bgr, byte> img)
         {
             unsafe
             {
@@ -44,16 +72,16 @@ namespace SS_OpenCV
                 int padding = m.widthStep - m.nChannels * m.width;
                 int step = m.widthStep;
 
-                uint[,] labels = new uint[img.Width, img.Height]; // É inicializado a 0?
+                uint[,] labels = new uint[img.Width, img.Height];
 
                 byte[] background = new byte[3];
                 background[0] = dataPtr[0];
                 background[1] = dataPtr[1];
                 background[2] = dataPtr[2];
 
-                Dictionary<uint, uint> equivalence_table = new Dictionary<uint, uint>();
+                Dictionary<uint, uint> equivalenceTable = new Dictionary<uint, uint>();
 
-                uint next_label = 1, current_label = 0;
+                uint nextLabel = 1, currentLabel = 0;
 
                 dataPtr += nChan + step;
 
@@ -64,189 +92,14 @@ namespace SS_OpenCV
                     {
                         if (dataPtr[0] != background[0] || dataPtr[1] != background[1] || dataPtr[2] != background[2])
                         {
-                            uint min_neigh_label = UInt32.MaxValue;
-                            // Verificar se existe label menor ao lado
-                            byte* neigh = dataPtr - nChan - step;
-                            bool not_bg = (neigh[0] != background[0] || neigh[1] != background[1] || neigh[2] != background[2]);
-                            if (not_bg)
-                            {
-                                min_neigh_label = labels[x - 1, y - 1];
-                            }
-
-                            neigh = dataPtr - step;
-                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] || neigh[2] != background[2]);
-                            if (not_bg)
-                            {
-                                current_label = labels[x, y - 1];
-                                if (min_neigh_label != UInt32.MaxValue && min_neigh_label != current_label)
-                                {
-                                    if (current_label < min_neigh_label)
-                                    {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label, current_label);
-                                    }
-                                    else if (current_label > min_neigh_label)
-                                    {
-                                        insertEquivalence(equivalence_table, current_label, min_neigh_label);
-                                    }
-                                }
-                                else
-                                {
-                                    min_neigh_label = current_label;
-                                }
-                            }
-
-                            neigh = dataPtr - step + nChan;
-                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] || neigh[2] != background[2]);
-                            if (not_bg)
-                            {
-                                current_label = labels[x + 1, y - 1];
-                                if (min_neigh_label != UInt32.MaxValue && min_neigh_label != current_label)
-                                {
-                                    if (current_label < min_neigh_label)
-                                    {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label, current_label);
-                                    }
-                                    else if (current_label > min_neigh_label)
-                                    {
-                                        insertEquivalence(equivalence_table, current_label, min_neigh_label);
-                                    }
-                                }
-                                else
-                                {
-                                    min_neigh_label = current_label;
-                                }
-                            }
-
-                            neigh = dataPtr - nChan;
-                            not_bg = (neigh[0] != background[0] || neigh[1] != background[1] || neigh[2] != background[2]);
-                            if (not_bg)
-                            {
-                                current_label = labels[x - 1, y];
-                                if (min_neigh_label != UInt32.MaxValue && min_neigh_label != current_label)
-                                {
-                                    if (current_label < min_neigh_label)
-                                    {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label, current_label);
-                                    }
-                                    else if (current_label > min_neigh_label)
-                                    {
-                                        insertEquivalence(equivalence_table, current_label, min_neigh_label);
-                                    }
-                                }
-                                else
-                                {
-                                    min_neigh_label = current_label;
-                                }
-                            }
-
-                            if (min_neigh_label != UInt32.MaxValue)
-                            {
-                                labels[x, y] = min_neigh_label;
-                            }
-                            else
-                            {
-                                labels[x, y] = next_label++;
-                            }
-
-                        }
-                        dataPtr += nChan;
-                    }
-                    dataPtr += 2 * nChan + padding;
-                }
-                
-
-                if (equivalence_table.Count > 0)
-                {
-
-                    // Compute transitive closure
-                    bool change = false;
-                    do
-                    {
-                    change = false;
-                    var list = equivalence_table.ToList();
-                        foreach (KeyValuePair<uint, uint> entry in list)
-                        {
-                            uint closure = computeClosure(equivalence_table, entry.Key);
-                            change = (entry.Value != closure);
-                        }
-                    } while (change);
-                    dataPtr = (byte*)m.imageData.ToPointer() + nChan + step;
-                    uint current_closure = 0;
-                    current_label = 0;
-
-                    // Second passage
-                    for (int y = 1; y < height - 1; y++)
-                    {
-                        for (int x = 1; x < width - 1; x++)
-                        {
-                            if (labels[x, y] != current_label)
-                            {
-                                uint value;
-                                if (equivalence_table.TryGetValue(labels[x, y], out value))
-                                {
-                                    current_closure = value;
-                                }
-                                else
-                                {
-                                    current_closure = labels[x, y];
-                                }
-                                current_label = labels[x, y];
-                            }
-                            
-                                labels[x, y] = current_closure;
-                            
-
-                            dataPtr += nChan;
-                        }
-                        dataPtr += 2 * nChan + padding;
-                    }
-                }
-
-                return labels;
-            }
-        }
-
-        public static uint[,] getLabelsClassic(Image<Bgr, byte> img)
-        {
-            unsafe
-            {
-                MIplImage m = img.MIplImage;
-                byte* dataPtr = (byte*) m.imageData.ToPointer();
-
-                int width = img.Width;
-                int height = img.Height;
-                int nChan = m.nChannels;
-                int padding = m.widthStep - m.nChannels * m.width;
-                int step = m.widthStep;
-
-                uint[,] labels = new uint[img.Width, img.Height]; // É inicializado a 0?
-
-                byte[] background = new byte[3];
-                background[0] = dataPtr[0];
-                background[1] = dataPtr[1];
-                background[2] = dataPtr[2];
-
-                Dictionary<uint, uint> equivalence_table = new Dictionary<uint, uint>();
-
-                uint next_label = 1, current_label = 0;
-
-                dataPtr += nChan + step;
-
-                // First passage
-                for (int y = 1; y < height - 1; y++)
-                {
-                    for (int x = 1; x < width - 1; x++)
-                    {
-                        if (dataPtr[0] != background[0] || dataPtr[1] != background[1] || dataPtr[2] != background[2])
-                        {
-                            uint min_neigh_label = UInt32.MaxValue;
+                            uint minNeighLabel = uint.MaxValue;
                             // Verificar se existe label menor ao lado
                             byte* neigh = dataPtr - nChan - step;
                             bool not_bg = (neigh[0] != background[0] || neigh[1] != background[1] ||
                                            neigh[2] != background[2]);
                             if (not_bg)
                             {
-                                min_neigh_label = labels[x - 1, y - 1];
+                                minNeighLabel = labels[x - 1, y - 1];
                             }
 
                             neigh = dataPtr - step;
@@ -254,22 +107,22 @@ namespace SS_OpenCV
                                       neigh[2] != background[2]);
                             if (not_bg)
                             {
-                                current_label = labels[x, y - 1];
-                                if (min_neigh_label != UInt32.MaxValue && min_neigh_label != current_label)
+                                currentLabel = labels[x, y - 1];
+                                if (minNeighLabel != uint.MaxValue && minNeighLabel != currentLabel)
                                 {
-                                    if (current_label < min_neigh_label)
+                                    if (currentLabel < minNeighLabel)
                                     {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label,
-                                            current_label);
+                                        minNeighLabel = InsertEquivalence(equivalenceTable, minNeighLabel,
+                                            currentLabel);
                                     }
-                                    else if (current_label > min_neigh_label)
+                                    else if (currentLabel > minNeighLabel)
                                     {
-                                        insertEquivalence(equivalence_table, current_label, min_neigh_label);
+                                        InsertEquivalence(equivalenceTable, currentLabel, minNeighLabel);
                                     }
                                 }
                                 else
                                 {
-                                    min_neigh_label = current_label;
+                                    minNeighLabel = currentLabel;
                                 }
                             }
 
@@ -278,22 +131,22 @@ namespace SS_OpenCV
                                       neigh[2] != background[2]);
                             if (not_bg)
                             {
-                                current_label = labels[x + 1, y - 1];
-                                if (min_neigh_label != UInt32.MaxValue && min_neigh_label != current_label)
+                                currentLabel = labels[x + 1, y - 1];
+                                if (minNeighLabel != uint.MaxValue && minNeighLabel != currentLabel)
                                 {
-                                    if (current_label < min_neigh_label)
+                                    if (currentLabel < minNeighLabel)
                                     {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label,
-                                            current_label);
+                                        minNeighLabel = InsertEquivalence(equivalenceTable, minNeighLabel,
+                                            currentLabel);
                                     }
-                                    else if (current_label > min_neigh_label)
+                                    else if (currentLabel > minNeighLabel)
                                     {
-                                        insertEquivalence(equivalence_table, current_label, min_neigh_label);
+                                        InsertEquivalence(equivalenceTable, currentLabel, minNeighLabel);
                                     }
                                 }
                                 else
                                 {
-                                    min_neigh_label = current_label;
+                                    minNeighLabel = currentLabel;
                                 }
                             }
 
@@ -302,32 +155,32 @@ namespace SS_OpenCV
                                       neigh[2] != background[2]);
                             if (not_bg)
                             {
-                                current_label = labels[x - 1, y];
-                                if (min_neigh_label != UInt32.MaxValue && min_neigh_label != current_label)
+                                currentLabel = labels[x - 1, y];
+                                if (minNeighLabel != uint.MaxValue && minNeighLabel != currentLabel)
                                 {
-                                    if (current_label < min_neigh_label)
+                                    if (currentLabel < minNeighLabel)
                                     {
-                                        min_neigh_label = insertEquivalence(equivalence_table, min_neigh_label,
-                                            current_label);
+                                        minNeighLabel = InsertEquivalence(equivalenceTable, minNeighLabel,
+                                            currentLabel);
                                     }
-                                    else if (current_label > min_neigh_label)
+                                    else if (currentLabel > minNeighLabel)
                                     {
-                                        insertEquivalence(equivalence_table, current_label, min_neigh_label);
+                                        InsertEquivalence(equivalenceTable, currentLabel, minNeighLabel);
                                     }
                                 }
                                 else
                                 {
-                                    min_neigh_label = current_label;
+                                    minNeighLabel = currentLabel;
                                 }
                             }
 
-                            if (min_neigh_label != UInt32.MaxValue)
+                            if (minNeighLabel != uint.MaxValue)
                             {
-                                labels[x, y] = min_neigh_label;
+                                labels[x, y] = minNeighLabel;
                             }
                             else
                             {
-                                labels[x, y] = next_label++;
+                                labels[x, y] = nextLabel++;
                             }
 
                         }
@@ -339,48 +192,39 @@ namespace SS_OpenCV
                 }
 
 
-
-                if (equivalence_table.Count > 0)
+                if (equivalenceTable.Count <= 0) return labels;
                 {
-
                     // Compute transitive closure
-                    bool change = false;
+                    bool change;
+                    
                     do
                     {
                         change = false;
-                        var list = equivalence_table.ToList();
+                        var list = equivalenceTable.ToList();
                         foreach (KeyValuePair<uint, uint> entry in list)
                         {
-                            uint closure = computeClosure(equivalence_table, entry.Key);
+                            uint closure = ComputeClosure(equivalenceTable, entry.Key);
                             change = (entry.Value != closure);
                         }
                     } while (change);
 
-                    dataPtr = (byte*) m.imageData.ToPointer() + nChan + step;
-                    uint current_closure = 0;
-                    current_label = 0;
+                    dataPtr = (byte*)m.imageData.ToPointer() + nChan + step;
+                    uint currentClosure = 0;
+                    currentLabel = 0;
 
                     // Second passage
                     for (int y = 1; y < height - 1; y++)
                     {
                         for (int x = 1; x < width - 1; x++)
                         {
-                            if (labels[x, y] != current_label)
+                            if (labels[x, y] != currentLabel)
                             {
-                                uint value;
-                                if (equivalence_table.TryGetValue(labels[x, y], out value))
-                                {
-                                    current_closure = value;
-                                }
-                                else
-                                {
-                                    current_closure = labels[x, y];
-                                }
+                                currentClosure = equivalenceTable.TryGetValue(labels[x, y], out var value) ? value : labels[x, y];
 
-                                current_label = labels[x, y];
+                                currentLabel = labels[x, y];
                             }
 
-                            labels[x, y] = current_closure;
+                            labels[x, y] = currentClosure;
 
 
                             dataPtr += nChan;

@@ -73,13 +73,7 @@ namespace SS_OpenCV
                     img1 += inc1;
                     img2 += inc2;
                 }
-
-                //Debug.Assert(y < lenght1, "Failed 1");
-                //Debug.Assert(y < lenght2, "Failed 2");
             }
-
-            // 1 -> Best
-            ////Console.WriteLine(points / maxLenght);
 
             if (points < 0)
             {
