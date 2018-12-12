@@ -2,6 +2,7 @@
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SS_OpenCV
 {
@@ -258,30 +259,73 @@ namespace SS_OpenCV
             }
         }
 
-        private void CombinePieces(SideValues[,] bestDiffs)
+        private int[] FindBestStoredValueIndexes(SideValues[,] bestDiffs)
         {
-            var bestPiece1 = 0;
-            var bestPiece2 = 0;
-            var bestSide = 0;
             var topPoints = 0.0;
+            int bestI = -1, bestJ = -1;
 
             for (var i = 0; i < _imagesPieces.Count; i++)
             {
                 for (var j = 0; j < _imagesPieces.Count; j++)
                 {
                     // Only check half of the matrix
-                    if (i >= j) continue;
-                    
-                    var sValue = bestDiffs[i, j];
-                    
-                    if (sValue.Points <= topPoints) continue;
-                        
-                    topPoints = sValue.Points;
-                    bestPiece1 = i;
-                    bestPiece2 = j;
-                    bestSide = sValue.Side;
+                    if (i <= j) continue;
+
+                    if (bestDiffs[i, j].Points <= topPoints) continue;
+
+                    topPoints = bestDiffs[i, j].Points;
+                    bestI = i;
+                    bestJ = j;
                 }
             }
+
+            int[] res = { bestI, bestJ };
+            return res;
+        }
+
+        private SideValues[,] CopyMatrix(SideValues[,] bestDiffs, int iToRemove, int jToRemove)
+        {
+            // Create new copied matrix without specified elements
+            SideValues[,] toReturn = new SideValues[bestDiffs.GetLength(0) - 1, bestDiffs.GetLength(0) - 1];
+
+            for(int oldI = 0, newI = 0; oldI < bestDiffs.GetLength(0); oldI++)
+            {
+                if (oldI == iToRemove || oldI == jToRemove)
+                    continue;
+
+                for (int oldJ = 0, newJ = 0; oldJ < bestDiffs.GetLength(1); oldJ++)
+                {
+                    if (oldJ == jToRemove || oldJ == iToRemove)
+                        continue;
+
+                    toReturn[newI, newJ] = bestDiffs[oldI, oldJ];
+                    newJ++;
+                }
+                newI++;
+            }
+
+            Image<Bgr, byte> newImage = _imagesPieces[_imagesPieces.Count - 1];
+
+            int pieceIndex = 0;
+            foreach (var piece in _imagesPieces)
+            {
+                if (pieceIndex != _imagesPieces.Count - 1)
+                {
+                    toReturn[bestDiffs.GetLength(0) - 2, pieceIndex++] = PuzzleHelper.CompareSides(newImage, piece);
+                }               
+            }
+
+            return toReturn;
+        }
+
+        private Image<Bgr, byte> CombinePieces(SideValues[,] bestDiffs, int bestPiece1, int bestPiece2)
+        {
+
+            int bestSide = bestDiffs[bestPiece1, bestPiece2].Side;
+
+            /*//Console.WriteLine("Piece1:\t" + bestPiece1);
+            //Console.WriteLine("Piece2:\t" + bestPiece2);
+            //Console.WriteLine("Side:\t" + bestSide);*/
             
             //Console.WriteLine("Piece1:\t" + bestPiece1);
             //Console.WriteLine("Piece2:\t" + bestPiece2);
@@ -290,8 +334,7 @@ namespace SS_OpenCV
             var piece1 = _imagesPieces[bestPiece1];
             var piece2 = _imagesPieces[bestPiece2];
 
-            _imagesPieces.Remove(piece1);
-            _imagesPieces.Remove(piece2);
+
 
             // Combine Pieces
             Image<Bgr, byte> newPiece;
@@ -316,36 +359,84 @@ namespace SS_OpenCV
                     break;
             }
 
-            //newPiece.Save("./imgs/part" + pieceID++ + ".png");
-            _imagesPieces.Add(newPiece);
+           // newPiece.Save("./imgs/part" + pieceID++ + ".png");
+
+            return newPiece;
         }
         
         public Image<Bgr, byte> GetFinalImage()
         {
-            while (_imagesPieces.Count != 1)
-            { 
-                var bestDiffs = new SideValues[_imagesPieces.Count, _imagesPieces.Count];
-                var currPos = 0;
-                foreach (var currPiece in _imagesPieces)
-                {
-                    var nextPos = 0;
-                    foreach (var nextPiece in _imagesPieces)
-                    {
-                        if (currPos < nextPos)
-                        {
-                            //Console.WriteLine("Best Side: " + currPos + " vs: " + nextPos);
-                            
-                            var bestDiff = PuzzleHelper.CompareSides(currPiece, nextPiece);
-                            bestDiffs[currPos, nextPos] = bestDiff;
-                        }
+            // TODO Keep values between iterations
+            SideValues[,] bestDiffs = new SideValues[_imagesPieces.Count, _imagesPieces.Count];
 
-                        nextPos++;
+            int bestI = 0, bestJ = 0;
+
+            // Fill comparing matrix with initial values
+            var currPos = 0;
+            foreach (var currPiece in _imagesPieces)
+            {
+                var nextPos = 0;
+                foreach (var nextPiece in _imagesPieces)
+                {
+                    if (currPos > nextPos)
+                    {
+                        // ////Console.WriteLine("Best Side: " + currPos + " vs: " + nextPos);
+
+                        bestDiffs[currPos, nextPos] = PuzzleHelper.CompareSides(currPiece, nextPiece);
+
+                        if (bestDiffs[currPos, nextPos].Points > bestDiffs[bestI, bestJ].Points)
+                        {
+                            bestI = currPos;
+                            bestJ = nextPos;
+                        }
                     }
 
-                    currPos++;
+                    nextPos++;
                 }
 
-                CombinePieces(bestDiffs);
+                currPos++;
+            }
+
+            while (_imagesPieces.Count != 1)
+            {
+                var piece1 = _imagesPieces[bestI];
+                var piece2 = _imagesPieces[bestJ];
+
+                Image<Bgr, byte> newPiece = CombinePieces(bestDiffs, bestI, bestJ);
+
+                _imagesPieces.Remove(piece1);
+                _imagesPieces.Remove(piece2);
+
+                _imagesPieces.Add(newPiece);
+
+                ////Console.WriteLine("MATRIX BEFORE//////////////////////////");
+                for (int i = 0; i < bestDiffs.GetLength(0); i++)
+                {
+                    for (int j = 0; j < bestDiffs.GetLength(1); j++)
+                    {
+                        ////Console.Write(bestDiffs[i, j].Points + "\t");
+                    }
+                    //Console.WriteLine("");
+                }
+                //Console.WriteLine("END //////////////////////////");
+
+                bestDiffs = CopyMatrix(bestDiffs, bestI, bestJ);
+
+                //Console.WriteLine("MATRIX //////////////////////////");
+                for(int i = 0; i < bestDiffs.GetLength(0); i++)
+                {
+                    for(int j = 0; j < bestDiffs.GetLength(1); j++)
+                    {
+                        //Console.Write(bestDiffs[i, j].Points + "\t");
+                    }
+                    //Console.WriteLine("");
+                }
+                //Console.WriteLine("END //////////////////////////");
+
+                int[] res = FindBestStoredValueIndexes(bestDiffs);
+
+                bestI = res[0];
+                bestJ = res[1];
             }
 
             return _imagesPieces[0];
