@@ -2,6 +2,7 @@
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SS_OpenCV
@@ -632,11 +633,66 @@ namespace SS_OpenCV
             }
         }
 
+
         public static void Mean_solutionB(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
             unsafe
             {
-                // TODO
+                var m = img.MIplImage;
+                var data = (byte*)m.imageData.ToPointer();
+                var dataBackup = data;
+                var width = img.Width;
+                var height = img.Height;
+                var nChan = m.nChannels;
+                var padding = m.widthStep - m.nChannels * m.width;
+                var step = m.widthStep;
+
+                var sums = new int[width,height,3];
+
+                data += nChan;
+                for (var y = 1; y < height - 1; y++)
+                {
+                    data += step;
+                    for (var ind = 0; ind < 3; ind++)
+                    {
+                        sums[1, y, ind] = (data - nChan - step)[ind] + (data - step)[ind] + (data + nChan - step)[ind]
+                                        + (data - nChan)[ind] + (data)[ind] + (data + nChan)[ind]
+                                        + (data - nChan + step)[ind] + (data + step)[ind] + (data + nChan + step)[ind];
+                    }
+                }
+
+                //data = dataBackup + nChan * 2 + step;
+                for (var y = 1; y < height - 1; y++)
+                {
+                    data = dataBackup + nChan * 2 + step * y;
+                    for (var x = 2; x < width - 1; x++)
+                    {
+                        for (var ind = 0; ind < 3; ind++)
+                        {
+                            sums[x, y, ind] = sums[x - 1, y, ind]
+                                - ((data-nChan*2-step)[ind] + (data-nChan*2)[ind] + (data-nChan*2+step)[ind])
+                                + ((data+nChan-step)[ind] + (data+nChan)[ind] + (data+nChan+step)[ind]);
+                        }
+
+                        data += nChan;
+                    }
+                    //data += nChan * 3 + padding;
+                }
+
+                data = dataBackup + nChan + step;
+                for (var y = 1; y < height-1; y++)
+                {
+                    for (var x = 1; x < width-1; x++)
+                    {
+                        data[0] = (byte)Math.Round(sums[x, y, 0] / 9.0);
+                        data[1] = (byte)Math.Round(sums[x, y, 1] / 9.0);
+                        data[2] = (byte)Math.Round(sums[x, y, 2] / 9.0);
+                        
+                        data += nChan;
+                    }
+                    data += nChan * 2 + padding;
+                }
+                
             }
         }
 
