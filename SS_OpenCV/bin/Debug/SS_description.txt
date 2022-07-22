@@ -1,9 +1,0 @@
-48092
-48043
-49593
-Indique aqui a lista de funcionalidades que valorizam o vosso projeto:
--Algoritmo Classico de Componentes Ligados
--Escalagem para comparação feita on-demand
--Obtenção de cantos e peças optimizado
--Comparações eficientes e simples
--Reduzido número de comparações necessárias
